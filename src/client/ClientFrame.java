@@ -144,5 +144,7 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			textDisplays.add(textArea);
 		}
 	}
+	
+	// TODO: name deselection on click
 
 }
