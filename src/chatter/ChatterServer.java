@@ -16,13 +16,13 @@ public class ChatterServer {
 	   
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		ChatterServer cs = new ChatterServer();
 	}
 	
 	public ChatterServer() {
 		
 		System.out.println("inside server constructor");
-
+		acceptClient();
 	}
 	
 	

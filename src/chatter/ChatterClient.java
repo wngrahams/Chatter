@@ -57,4 +57,8 @@ public class ChatterClient {
 			System.err.println(e);
 		}
 	}
+	
+	public User getUser() {
+		return clientUser;
+	}
 }
