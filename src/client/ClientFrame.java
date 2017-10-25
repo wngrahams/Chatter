@@ -5,8 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -21,16 +20,17 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import com.sun.xml.internal.ws.util.StringUtils;
-
-public class ClientFrame extends JFrame implements ActionListener{
+public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
 	
 	private JTabbedPane display;
 	private JButton sendButton;
-	private JTextArea textDisplay;
 	private JTextField textEntry;
 	private JScrollPane usersPanel;
+	
+	private ArrayList<JTextArea> textDisplays = new ArrayList<JTextArea>(1);
 	
 	private JList<User> userList;
 	private DefaultListModel<User> listModel;
@@ -63,7 +63,8 @@ public class ClientFrame extends JFrame implements ActionListener{
 	    chatPanel.setLayout(new BorderLayout());
 	    
 	    //Tabbed chat display
-	    textDisplay = new JTextArea();
+	    JTextArea textDisplay = new JTextArea();
+	    textDisplays.add(textDisplay);
 	    textDisplay.setEditable(false);
 	    
 	    JScrollPane textScrollPane = new JScrollPane(textDisplay);
@@ -77,10 +78,13 @@ public class ClientFrame extends JFrame implements ActionListener{
 	    //Text entry panel
 	    JPanel textPanel = new JPanel();
 	    textPanel.setLayout(new BorderLayout());
+	    
 	    textEntry = new JTextField(30);
 	    textEntry.addActionListener(this);
+	    
 	    sendButton = new JButton("Send");
 	    sendButton.addActionListener(this);
+	    
 	    textPanel.add(textEntry, BorderLayout.CENTER);
 	    textPanel.add(sendButton, BorderLayout.EAST);
 	    
@@ -91,6 +95,7 @@ public class ClientFrame extends JFrame implements ActionListener{
 	    //usersPanel panel
 	    listModel = new DefaultListModel<User>();
 		userList = new JList<User>(listModel);
+		userList.addListSelectionListener(this);
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    usersPanel = new JScrollPane(userList);
 	    initializeUsersPanel();
@@ -109,15 +114,34 @@ public class ClientFrame extends JFrame implements ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String text = textEntry.getText();
-		System.out.println(text);
-		if (text != null && !text.isEmpty()) {
-			System.out.println("here");
-			textDisplay.append(text + '\n');
-			textEntry.setText(null);
-			//Make sure the new text is visible, even if there
-			//was a selection in the text area.
-			textDisplay.setCaretPosition(textDisplay.getDocument().getLength());
+		if (e.getSource() == sendButton || e.getSource() == textEntry) {
+			String text = textEntry.getText();
+			if (text != null && !text.isEmpty()) {				
+				JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
+				currentTextDisplay.append(text + '\n');
+				textEntry.setText(null);
+				
+				currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+			}
+		}
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		User selected = userList.getSelectedValue();
+		int tabIndex = display.indexOfTab(selected.getNickname());
+		
+		if (tabIndex != -1) {
+			display.setSelectedIndex(tabIndex);
+		}
+		else {
+			JTextArea textArea = new JTextArea();
+		    textArea.setEditable(false);
+		    
+		    String tooltip = "Private message with " + selected.getNickname();
+		    
+			display.addTab(selected.getNickname(), null, new JScrollPane(textArea), tooltip);
+			textDisplays.add(textArea);
 		}
 	}
 
