@@ -23,7 +23,11 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import chatter.ChatterClient;
+
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
+	
+	private ChatterClient connectedClient;
 	
 	private JTabbedPane display;
 	private JButton sendButton;
@@ -35,8 +39,9 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	private JList<User> userList;
 	private DefaultListModel<User> listModel;
 	
-	public ClientFrame() {
+	public ClientFrame(ChatterClient cc) {
 		super();
+		connectedClient = cc;
 		initializePanels();
 		this.setBackground(Color.LIGHT_GRAY);
 		
