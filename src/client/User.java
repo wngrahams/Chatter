@@ -25,4 +25,9 @@ public class User {
 	protected void setNickname(String name) {
 		nickname = name;
 	}
+	
+	@Override
+	public String toString() {
+		return nickname;
+	}
 }

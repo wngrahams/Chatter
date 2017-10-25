@@ -3,31 +3,38 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import javafx.scene.layout.Border;
+import com.sun.xml.internal.ws.util.StringUtils;
 
-public class ClientFrame extends JFrame {
+public class ClientFrame extends JFrame implements ActionListener{
 	
 	private JTabbedPane display;
+	private JButton sendButton;
+	private JTextArea textDisplay;
 	private JTextField textEntry;
-	private JPanel usersPanel;
+	private JScrollPane usersPanel;
 	
-//	private ArrayList<User> userList = new ArrayList<User>();
-
+	private JList<User> userList;
+	private DefaultListModel<User> listModel;
+	
 	public ClientFrame() {
 		super();
 		initializePanels();
@@ -37,18 +44,8 @@ public class ClientFrame extends JFrame {
 	}
 	
 	public void addNewUser(User newUser) {
-//		JLabel newUser = new JLabel(nickname);
-//	    newUser.setBorder(new LineBorder(Color.DARK_GRAY));
-//	    
-	    System.out.println("new user: " + newUser.getNickname());
-	    
-	    JLabel userLabel = new JLabel(newUser.getNickname());
-	    usersPanel.add(userLabel);
+	    listModel.addElement(newUser);
 
-//		String currentUsers = usersPanel.getText();
-//		String newUsers = currentUsers + "\n" + nickname;
-//		System.out.println("new list: " + newUsers);
-//		usersPanel.setText(newUsers);
 	    pack();
 		repaint();
 	}
@@ -62,22 +59,40 @@ public class ClientFrame extends JFrame {
 
 	    setLayout(new BorderLayout());
 	    
+	    JPanel chatPanel = new JPanel();
+	    chatPanel.setLayout(new BorderLayout());
+	    
 	    //Tabbed chat display
+	    textDisplay = new JTextArea();
+	    textDisplay.setEditable(false);
+	    
+	    JScrollPane textScrollPane = new JScrollPane(textDisplay);
+	    
 	    display = new JTabbedPane();
 	    display.setPreferredSize(new Dimension(550, 400));
-	    display.addTab("Global Chat", null, null, "Global chat with all connected usersPanel");
+	    display.addTab("Global Chat", null, textScrollPane, "Global chat with all connected users");
 	    
-	    add(display, BorderLayout.CENTER);
-	    
+	    chatPanel.add(display, BorderLayout.CENTER);
 	    
 	    //Text entry panel
-	    textEntry = new JTextField();
-//	    textEntry.setPreferredSize(new Dimension(700, 50));
+	    JPanel textPanel = new JPanel();
+	    textPanel.setLayout(new BorderLayout());
+	    textEntry = new JTextField(30);
+	    textEntry.addActionListener(this);
+	    sendButton = new JButton("Send");
+	    sendButton.addActionListener(this);
+	    textPanel.add(textEntry, BorderLayout.CENTER);
+	    textPanel.add(sendButton, BorderLayout.EAST);
 	    
-	    add(textEntry, BorderLayout.SOUTH);
+	    chatPanel.add(textPanel, BorderLayout.SOUTH);
+	    
+	    add(chatPanel, BorderLayout.CENTER);
 	    
 	    //usersPanel panel
-	    usersPanel = new JPanel();
+	    listModel = new DefaultListModel<User>();
+		userList = new JList<User>(listModel);
+		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    usersPanel = new JScrollPane(userList);
 	    initializeUsersPanel();
 	    
 	    add(usersPanel, BorderLayout.WEST);
@@ -90,7 +105,20 @@ public class ClientFrame extends JFrame {
 				"<html><h3>Connected users:</h3></html>");
 		title.setTitleJustification(TitledBorder.LEFT);
 		usersPanel.setBorder(title);
+	}
 
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String text = textEntry.getText();
+		System.out.println(text);
+		if (text != null && !text.isEmpty()) {
+			System.out.println("here");
+			textDisplay.append(text + '\n');
+			textEntry.setText(null);
+			//Make sure the new text is visible, even if there
+			//was a selection in the text area.
+			textDisplay.setCaretPosition(textDisplay.getDocument().getLength());
+		}
 	}
 
 }
