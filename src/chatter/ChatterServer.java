@@ -3,9 +3,19 @@ package chatter;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sun.java_cup.internal.runtime.Scanner;
+
+import server.ServerFrame;
+
+import chatter.ChatterClient;
+import client.User;
 
 public class ChatterServer {
 
@@ -13,6 +23,10 @@ public class ChatterServer {
 	Socket client;
 	int port = 0xFFFF;
 	boolean keepGoing = true;
+	
+	Map<User,ChatterClient> map = new HashMap<User,ChatterClient>();
+	
+	private ServerFrame serverFrame;
 	   
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -33,15 +47,24 @@ public class ChatterServer {
 		{
 			sock = new ServerSocket(port);
 			
+			ObjectInputStream clientChatterObj;
+
 			while(keepGoing)
 			{
-				client = sock.accept(); 
+				client = sock.accept();
+				
+				clientChatterObj = new ObjectInputStream(client.getInputStream());
+				Object clientObj = clientChatterObj.readObject();
+				ChatterClient testClient = (ChatterClient)clientObj;
+				User userObj =  testClient.getUser();
+				
+				map.put(userObj, testClient);
+				
+				
 	            System.out.println("Client connected to server");
-/*
-	            PrintWriter pout = new PrintWriter( client.getOutputStream(), true);
-	            String writeme = new java.util.Date().toString();
-	            pout.println( writeme );
-	            pout.flush();*/
+	            System.out.println("client obj - " + testClient);
+
+
 			}
 			sock.close();
 		}
@@ -56,17 +79,50 @@ public class ChatterServer {
 	public void readClient() {
 		try
 		{
-	        InputStream in = client.getInputStream();
-	        BufferedReader bin = new BufferedReader( new InputStreamReader(in) );
-	        String msg = bin.readLine();
-            
-            System.out.println("Server recieved following message from client ="+msg);
+			
+			//Map<String, String> map = new HashMap<String,String>();
+			
+			ObjectInputStream inputStream; 
+			
+			while(keepGoing)
+			{
+		        //InputStream in = client.getInputStream();
+		        //Scanner in2 = (Scanner) client.getInputStream();
+		        
+		        //String[] parts = in.split()
+		        //map.put(key, value)
+		        //Object o = inputStream.readObject();
+		        
+		        //BufferedReader bin = new BufferedReader( new InputStreamReader(in) );
+		        //String msg = bin.readLine();
+	            
+	            //System.out.println("Server recieved following message from client ="+msg);
+	            
+	            /*
+	            if(object.getRecipient == null)
+	            {
+	                  //group message
+	            }
+	            else
+	            {
+	            		//search hashmap for recipient user obj
+	            }
+	           
+	            
+	            */
+			}
+			
+
 		}
 		catch(Exception e)
 		{
 			
 		}
-
+		
+	}
+	
+	public void splitStream(InputStream in)
+	{
 		
 	}
 	
