@@ -20,6 +20,8 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -38,6 +40,8 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	
 	private JList<User> userList;
 	private DefaultListModel<User> listModel;
+	
+	private User recipient;
 	
 	public ClientFrame(ChatterClient cc) {
 		super();
@@ -76,6 +80,24 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	    
 	    display = new JTabbedPane();
 	    display.setPreferredSize(new Dimension(550, 400));
+	    display.addChangeListener(new ChangeListener() {
+	        public void stateChanged(ChangeEvent e) {
+	        	int currentTab = display.getSelectedIndex();
+	            if (currentTab == 0) {
+	            	recipient = null;
+	            }
+	            else {
+	            	// TODO: make this more efficient
+	            	String recipientName = display.getTitleAt(currentTab);
+	            	for (int i=0; i<listModel.getSize(); i++) {
+	            		if(listModel.getElementAt(i).getNickname() == recipientName) {
+	            			recipient = listModel.getElementAt(i);
+	            			break;
+	            		}
+	            	}
+	            }
+	        }
+	    });
 	    display.addTab("Global Chat", null, textScrollPane, "Global chat with all connected users");
 	    
 	    chatPanel.add(display, BorderLayout.CENTER);
@@ -124,6 +146,7 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			if (text != null && !text.isEmpty()) {				
 				JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
 				currentTextDisplay.append(text + '\n');
+				connectedClient.sendToServer(text, recipient);
 				textEntry.setText(null);
 				
 				currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
