@@ -11,7 +11,7 @@ public class ChatterServer {
 
 	ServerSocket sock;
 	Socket client;
-	int port = 5155;
+	int port = 0xFFFF;
 	boolean keepGoing = true;
 	   
 	public static void main(String[] args) {
@@ -43,14 +43,14 @@ public class ChatterServer {
 	            pout.println( writeme );
 	            pout.flush();*/
 			}
-			
+			sock.close();
 		}
 		
 		catch(Exception e)
 		{
-			
+			System.err.println(e);
 		}
-
+		
 	}
 	
 	public void readClient() {

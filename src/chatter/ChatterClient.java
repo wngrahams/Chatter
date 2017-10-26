@@ -8,17 +8,22 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.net.Socket;
 
 import client.ClientFrame;
 import client.User;
 
-public class ChatterClient {
+public class ChatterClient implements Serializable {
 	
-	private ClientFrame clientFrame;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 836093546191030129L;
+	private transient ClientFrame clientFrame;
 	private User clientUser;
 	
-	private Socket socket;
+	private transient Socket socket;
 	private String serverIP;
 	private int serverPort;
 
@@ -58,9 +63,12 @@ public class ChatterClient {
 			System.out.println("Connecting to server...");
 			ObjectOutputStream userToServer = new ObjectOutputStream(socket.getOutputStream());
 			userToServer.writeObject(this);
+			System.out.println("after write object");
 		} catch (IOException e) {
 			System.err.println("Failed to connect to server.");
 			System.err.println(e);
+		} catch (NullPointerException n) {
+			System.out.println("???");
 		}
 	}
 	
@@ -75,6 +83,9 @@ public class ChatterClient {
 			userToServer.writeObject(message);
 		} catch (IOException e) {
 			System.out.println("Error sending message to " + recipient);
+			System.err.println(e);
+		} catch (NullPointerException n) {
+			System.out.println("???");
 		}
 	}
 }

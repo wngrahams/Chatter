@@ -1,9 +1,15 @@
 package chatter;
 
+import java.io.Serializable;
+
 import client.User;
 
-public class Message {
+public class Message implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4419539405020821670L;
 	private String message;
 	private User recipient;
 	private User sender;
