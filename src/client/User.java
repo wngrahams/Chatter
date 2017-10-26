@@ -12,7 +12,8 @@ public class User implements Serializable {
 	private String ipAddress;
 	
 	public User() {
-		nickname = "user";
+		int rand = (int) (Math.random() * 100000 + 1);
+		nickname = "user" + Integer.toString(rand);
 		ipAddress = "localhost";
 	}
 	
