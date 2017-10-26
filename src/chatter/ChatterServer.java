@@ -63,6 +63,7 @@ public class ChatterServer {
 				
 	            System.out.println("Client connected to server");
 	            System.out.println("client obj - " + testClient);
+	            System.out.println("client user: " + userObj);
 
 
 			}
