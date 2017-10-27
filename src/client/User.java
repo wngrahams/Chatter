@@ -30,7 +30,8 @@ public class User implements Serializable {
 		return nickname;
 	}
 	
-	protected void setNickname(String name) {
+	//changed to public
+	public void setNickname(String name) {
 		nickname = name;
 	}
 	
