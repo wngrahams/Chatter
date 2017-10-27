@@ -78,6 +78,7 @@ public class ChatterClient implements Serializable {
 	
 	public void sendToServer(String text, User recipient) {
 		try {
+			System.out.println("insdie client send to server");
 			ObjectOutputStream userToServer = new ObjectOutputStream(socket.getOutputStream());
 			Message message = new Message(recipient, clientUser, text);
 			userToServer.writeObject(message);
