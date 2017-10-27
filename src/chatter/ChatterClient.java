@@ -67,19 +67,9 @@ public class ChatterClient implements Serializable {
 
 	private void connectToServer() {
 		try {
-//			socket = new Socket(serverIP, serverPort);
-//			System.out.println("Connecting to server...");
-//			
-//			fromServer = new ObjectInputStream(socket.getInputStream());
-//			
-//			toServer = new ObjectOutputStream(socket.getOutputStream());
-//			toServer.writeObject(this);
-//			System.out.println("Connected to server");
-			
 			socket = new Socket(serverIP, serverPort);
 			System.out.println("Connecting to server...");
 			
-//			fromServer = new ObjectInputStream(socket.getInputStream());
 			toServer = new ObjectOutputStream(socket.getOutputStream());
 			
 			toServer.writeObject(this);
@@ -134,6 +124,7 @@ public class ChatterClient implements Serializable {
 	
 	public void recieveMessage() {
 		try {
+			fromServer = new ObjectInputStream(socket.getInputStream());
 			if (fromServer != null) {
 				Message serverMessage = (Message)(fromServer.readObject());
 				if (null != serverMessage) {
@@ -141,7 +132,7 @@ public class ChatterClient implements Serializable {
 					System.out.println("Recieved message: " + serverMessage);
 				}
 				else
-					System.out.println("No Message recieved");
+					System.err.println("No Message recieved");
 			}
 		} catch (IOException e) {
 			System.err.println(e);
