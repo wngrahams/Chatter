@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import com.sun.corba.se.spi.activation.Server;
+
 public class ServerFrame extends JFrame {
 
 	   JPanel labelPanel1;
@@ -23,6 +25,8 @@ public class ServerFrame extends JFrame {
 	   //JTextField text;
 	   private JTextArea clientUpdate;
 	   private JTextArea clients;
+	   
+	   private Server server;
 	   
 	   
 	   /*

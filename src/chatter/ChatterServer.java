@@ -1,11 +1,8 @@
 package chatter;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,21 +23,18 @@ public class ChatterServer implements Runnable{
 	Socket client;
 	int port = 0xFFFF;
 	boolean keepGoing = true;
-	
-	private PrintWriter os;
-	//private final Socket socket;
-	
+
 	Map<User,ChatterClient> map = new HashMap<User,ChatterClient>();
 	
 	private ServerFrame serverFrame;
-	private ObjectInputStream clientChatterObj;
+	public ObjectInputStream clientChatterObj;
 	private ObjectOutputStream serverObj;
 	
 	private User sender;
 	private User recipient;
 	
 	private ChatterClient testClient;
-	private Message messageObj;
+	public Message messageObj;
 	private User userObj;
 	private String message;
 	
@@ -82,15 +76,16 @@ public class ChatterServer implements Runnable{
 				testClient = (ChatterClient)clientObj;
 				userObj =  testClient.getUser();
 				
+				//this client that just logged on is added to teh hash
 				map.put(userObj, testClient);
-	
-				//this.os = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
-				
+
 	            System.out.println("Client connected to server");
 	            System.out.println("client obj - " + testClient);
 	            System.out.println("client user: " + userObj);
 	            
-	            
+	            //This is the new class
+	            UniqueClient too = new UniqueClient(client); 
+	            too.start(); //opens the thread for this unique client
 
 
 			}
@@ -226,18 +221,7 @@ public class ChatterServer implements Runnable{
 	//receive Message object
 	public void sendMessage(User recipient, User sender, String message)
 	{
-		//connect to recipient, send Message object
-		System.out.println("inside server SendMessage");
-	      try {
-	          synchronized (os) {
-	            os.println(sender + ":" + message);
-	            os.flush();
-	          }
-	        } catch (Exception e) {
-	          // We shutdown this client on any exception.
-	        	e.printStackTrace();
-	        }
-		
+
 		if(recipient == null)
 		{
 			//sending a group message, so it has to be send to the "sender" as well
@@ -257,15 +241,49 @@ public class ChatterServer implements Runnable{
 	}
 	
 	
-	/*
-	class  extends Thread
+	
+	class UniqueClient extends Thread
 	{
 		Socket sock;
-		ObjectInputStream messageObj;
+		ObjectInputStream messageObject;
 		ObjectOutputStream serverObj;
+		Message receivedMsgObj;
+		String messageText;
+		
+		User recipientThread;
+		User senderThread;
 		
 		
+		UniqueClient(Socket sock)//, ChatterClient clientObj, User userObj)	
+		{
+			this.sock = sock;
+			try
+			{
+				messageObject = new ObjectInputStream(client.getInputStream());
+				serverObj = new ObjectOutputStream(client.getOutputStream());
+				
+				System.out.println("message obj received : ");
+		        Object objReceived = messageObject.readObject();
+		        System.out.println("message obj received : " + objReceived );
+		        receivedMsgObj = (Message)objReceived;
+		        messageText = receivedMsgObj.getMessage();	
+		        
+		        senderThread = receivedMsgObj.getSender();
+		        recipientThread = receivedMsgObj.getRecipient();
+		        System.out.println("message obj received : " + receivedMsgObj);
+			}
+			catch(Exception e)
+			{
+				System.err.println(e);
+			}
+
+		}
+		
+		public void run()
+		{
+			//here is where I'll have to call "sendMessage" method
+		}
 	}
-	*/
-	
+		
 }
+
