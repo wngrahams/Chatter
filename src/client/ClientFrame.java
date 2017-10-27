@@ -26,7 +26,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import chatter.ChatterClient;
+import chatter.Message;
 
+// RPC doesn't require socket connection
+
+@SuppressWarnings("serial")
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
 	
 	private ChatterClient connectedClient;
@@ -59,6 +63,41 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		repaint();
 	}
 	
+	public void displayMessage(Message serverMessage) {
+		User messageSender = serverMessage.getSender();
+		User messageRecipient = serverMessage.getRecipient();
+
+		// navigate to correct tab or create new tab
+		if (connectedClient.getUser() == messageSender)
+			goToTab(messageRecipient);
+		else if (connectedClient.getUser() == messageRecipient)
+			goToTab(messageSender);
+
+		// display text
+		printToCurrentTab(serverMessage);
+	}
+	
+	private void goToTab(User u) {
+		int tabIndex;
+		if (null == u) 
+			tabIndex = 0;
+		else 
+			tabIndex = display.indexOfTab(u.getNickname());
+		
+		if (tabIndex != -1) {
+			display.setSelectedIndex(tabIndex);
+		}
+		else {
+			JTextArea textArea = new JTextArea();
+		    textArea.setEditable(false);
+		    
+		    String tooltip = "Private message with " + u.getNickname();
+		    
+			display.addTab(u.getNickname(), null, new JScrollPane(textArea), tooltip);
+			textDisplays.add(textArea);
+		}
+	}
+	
 	private void initializePanels() {
 		setTitle("Chatter Client");
 		setSize(700, 550);
@@ -81,21 +120,9 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	    display = new JTabbedPane();
 	    display.setPreferredSize(new Dimension(550, 400));
 	    display.addChangeListener(new ChangeListener() {
+	    	// updates recipient of message based on currently selected tab
 	        public void stateChanged(ChangeEvent e) {
-	        	int currentTab = display.getSelectedIndex();
-	            if (currentTab == 0) {
-	            	recipient = null;
-	            }
-	            else {
-	            	// TODO: make this more efficient
-	            	String recipientName = display.getTitleAt(currentTab);
-	            	for (int i=0; i<listModel.getSize(); i++) {
-	            		if(listModel.getElementAt(i).getNickname() == recipientName) {
-	            			recipient = listModel.getElementAt(i);
-	            			break;
-	            		}
-	            	}
-	            }
+	        	setRecipientFromSelectedTab();
 	        }
 	    });
 	    display.addTab("Global Chat", null, textScrollPane, "Global chat with all connected users");
@@ -138,39 +165,46 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		title.setTitleJustification(TitledBorder.LEFT);
 		usersPanel.setBorder(title);
 	}
-
+	
+	private void printToCurrentTab(Message message) {
+		JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
+		currentTextDisplay.append(message + "\n");
+		
+		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void setRecipientFromSelectedTab() {
+		int currentTab = display.getSelectedIndex();
+        if (currentTab == 0) {
+        	recipient = null;
+        }
+        else {
+        	// TODO: make this more efficient
+        	String recipientName = display.getTitleAt(currentTab);
+        	for (int i=0; i<listModel.getSize(); i++) {
+        		if(listModel.getElementAt(i).getNickname() == recipientName) {
+        			recipient = listModel.getElementAt(i);
+        			break;
+        		}
+        	}
+        }
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == sendButton || e.getSource() == textEntry) {
 			String text = textEntry.getText();
 			if (text != null && !text.isEmpty()) {				
-				JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
-				currentTextDisplay.append(text + '\n');
-				connectedClient.sendToServer(text, recipient);
+				connectedClient.sendMessage(text, recipient);
 				textEntry.setText(null);
 				
-				currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 			}
 		}
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		User selected = userList.getSelectedValue();
-		int tabIndex = display.indexOfTab(selected.getNickname());
-		
-		if (tabIndex != -1) {
-			display.setSelectedIndex(tabIndex);
-		}
-		else {
-			JTextArea textArea = new JTextArea();
-		    textArea.setEditable(false);
-		    
-		    String tooltip = "Private message with " + selected.getNickname();
-		    
-			display.addTab(selected.getNickname(), null, new JScrollPane(textArea), tooltip);
-			textDisplays.add(textArea);
-		}
+		goToTab(userList.getSelectedValue());
 	}
 	
 	// TODO: name deselection on click
