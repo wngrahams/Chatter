@@ -44,5 +44,13 @@ public class Message implements Serializable {
 		this.sender = sender;
 	}
 
-	
+	@Override
+	public String toString() {
+		String output;
+		if (sender != null)
+			output = sender + ": " + message;
+		else 
+			output = "Message from server: " + message;
+		return output;
+	}
 }
