@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+
+import server.ChatterThread;
 import server.ServerFrame;
 
 import chatter.ChatterClient;
@@ -64,36 +66,35 @@ public class ChatterServer implements Runnable{
 			sock = new ServerSocket(port);
 			
 			//ObjectInputStream clientChatterObj;
+			System.out.println("looking for clients");
+			client = sock.accept();
+			System.out.println("found a client");
+			clientChatterObj = new ObjectInputStream(client.getInputStream());
+			serverObj = new ObjectOutputStream(client.getOutputStream());
+			
+			Object clientObj = clientChatterObj.readObject();
+			testClient = (ChatterClient)clientObj;
+			userObj =  testClient.getUser();
+			
+			//this client that just logged on is added to teh hash
+			map.put(userObj, testClient);
+
+            System.out.println("Client connected to server");
+            System.out.println("client obj - " + testClient);
+            System.out.println("client user: " + userObj);
+            
+            //This is the new class
+            UniqueClient clientThread = new UniqueClient(client); 
+            clientThread.start(); //opens the thread for this unique client
+            
+            newMap.put(userObj, clientThread);
+            
+            //clientFrameObj = new ClientFrame(testClient);
+            //clientFrameObj.addNewUser(userObj);
 
 			while(keepGoing)
 			{
-				System.out.println("looking for clients");
-				client = sock.accept();
-				System.out.println("found a client");
-				clientChatterObj = new ObjectInputStream(client.getInputStream());
-				serverObj = new ObjectOutputStream(client.getOutputStream());
-				
-				Object clientObj = clientChatterObj.readObject();
-				testClient = (ChatterClient)clientObj;
-				userObj =  testClient.getUser();
-				
-				//this client that just logged on is added to teh hash
-				map.put(userObj, testClient);
-
-	            System.out.println("Client connected to server");
-	            System.out.println("client obj - " + testClient);
-	            System.out.println("client user: " + userObj);
-	            
-	            //This is the new class
-	            UniqueClient clientThread = new UniqueClient(client); 
-	            clientThread.start(); //opens the thread for this unique client
-	            
-	            newMap.put(userObj, clientThread);
-	            
-	            //clientFrameObj = new ClientFrame(testClient);
-	            //clientFrameObj.addNewUser(userObj);
-
-
+	            new ChatterThread(client).start();
 			}
 			sock.close();
 		}
