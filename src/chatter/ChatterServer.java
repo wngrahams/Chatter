@@ -28,7 +28,7 @@ public class ChatterServer implements Runnable{
 	public ObjectInputStream clientChatterObj;
 	private ObjectOutputStream serverObj;
 	
-	private User sender;
+	private User sender; 
 	private User recipient;
 	
 	private ChatterClient testClient;
@@ -205,30 +205,7 @@ public class ChatterServer implements Runnable{
 		//instead of sending message, send string "nickname" to everybody
 	}
 	
-	//receive Message object
-	public void sendMessage(User recipient, User sender, String message)
-	{
-		//connect to recipient, send Message object
-		
-		if(recipient == null)
-		{
-			//sending a group message, so it has to be send to the "sender" as well
-		}
-		
-		else
-		{
-			//sending private message
-			//establish connection, 
-		}
-		
-	}
-	
-	public void sendNickname(String nick)
-	{
-		//instead of sending message, send string "nickname" to everybody
-	}
-	
-	
+
 	
 	class UniqueClient extends Thread
 	{
