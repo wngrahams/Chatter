@@ -11,7 +11,6 @@ import server.ServerFrame;
 
 import chatter.ChatterClient;
 import client.User;
-import client.ClientFrame;
 import chatter.Message;
 
 public class ChatterServer implements Runnable{
@@ -68,8 +67,9 @@ public class ChatterServer implements Runnable{
 
 			while(keepGoing)
 			{
+				System.out.println("looking for clients");
 				client = sock.accept();
-				
+				System.out.println("found a client");
 				clientChatterObj = new ObjectInputStream(client.getInputStream());
 				serverObj = new ObjectOutputStream(client.getOutputStream());
 				
@@ -126,7 +126,7 @@ public class ChatterServer implements Runnable{
 		        recipient = messageObj.getRecipient();
 		        
 		        System.out.println("message obj received : " + messageObj);
-		        
+        
 		        
 		        //Sender is attempting to update name
 		        if(message.charAt(0) == '/')
@@ -196,6 +196,29 @@ public class ChatterServer implements Runnable{
 			//null pointer exception bc Jim is not actually a user connected to the server
 			//Jim has no socket.
 			
+		}
+		
+	}
+	
+	public void sendNickname(String nick)
+	{
+		//instead of sending message, send string "nickname" to everybody
+	}
+	
+	//receive Message object
+	public void sendMessage(User recipient, User sender, String message)
+	{
+		//connect to recipient, send Message object
+		
+		if(recipient == null)
+		{
+			//sending a group message, so it has to be send to the "sender" as well
+		}
+		
+		else
+		{
+			//sending private message
+			//establish connection, 
 		}
 		
 	}
