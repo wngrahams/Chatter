@@ -9,7 +9,7 @@ public class User implements Serializable {
 	 */
 	private static final long serialVersionUID = 8774797718179737042L;
 	private String nickname;
-	private String ipAddress;
+	private String ipAddress; 
 	
 	public User() {
 		int rand = (int) (Math.random() * 100000 + 1);

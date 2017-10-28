@@ -7,17 +7,18 @@ import client.User;
 public class Message implements Serializable {
 
 	/**
-	 * 
+	 *  
 	 */
 	private static final long serialVersionUID = 4419539405020821670L;
 	private String message;
 	private User recipient;
 	private User sender;
-	
+
 	public Message(User to, User from, String text) {
 		setRecipient(to);
 		setSender(from);
 		setMessage(text);
+		
 	}
 
 	public String getMessage() {
@@ -44,5 +45,13 @@ public class Message implements Serializable {
 		this.sender = sender;
 	}
 
-	
+	@Override
+	public String toString() {
+		String output;
+		if (sender != null)
+			output = sender + ": " + message;
+		else 
+			output = "Message from server: " + message;
+		return output;
+	}
 }
