@@ -34,7 +34,7 @@ public class ChatterClient implements Serializable {
 	}
 	
 	public ChatterClient() {
-		this("localhost", 0xFFFF);
+		this("localhost", 0xFFFC);
 	}
 	
 	public ChatterClient(int port) {
@@ -70,11 +70,11 @@ public class ChatterClient implements Serializable {
 			socket = new Socket(serverIP, serverPort);
 			System.out.println("Connecting to server...");
 			
-			toServer = new ObjectOutputStream(socket.getOutputStream());
-			
-			toServer.writeObject(this);
-			toServer.flush();
-			System.out.println("after write object");
+//			toServer = new ObjectOutputStream(socket.getOutputStream());
+//			
+//			toServer.writeObject(this);
+////			toServer.flush();
+//			System.out.println("after write object");
 		} catch (IOException e) {
 			System.err.println("Failed to connect to server.");
 			System.err.println(e);
@@ -111,9 +111,10 @@ public class ChatterClient implements Serializable {
 		@Override
 		public void run() {
 			try {	
+				toServer = new ObjectOutputStream(socket.getOutputStream());
 				toServer.writeObject(messageToSend);
 				System.out.println("Sending message: " + messageToSend);
-				toServer.flush();
+//				toServer.flush();
 			} catch (IOException e) {
 				Message errorMessage = new Message(clientUser, null, "Error sending message to " + messageToSend.getRecipient());
 				clientFrame.displayMessage(errorMessage);

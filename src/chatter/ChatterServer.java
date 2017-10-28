@@ -19,7 +19,7 @@ public class ChatterServer implements Runnable{
 
 	ServerSocket sock;
 	Socket client;
-	int port = 0xFFFF;
+	int port = 0xFFFC;
 	boolean keepGoing = true;
 
 	Map<User,ChatterClient> map = new HashMap<User,ChatterClient>();
@@ -69,25 +69,25 @@ public class ChatterServer implements Runnable{
 			System.out.println("looking for clients");
 			client = sock.accept();
 			System.out.println("found a client");
-			clientChatterObj = new ObjectInputStream(client.getInputStream());
-			serverObj = new ObjectOutputStream(client.getOutputStream());
+//			clientChatterObj = new ObjectInputStream(client.getInputStream());
+//			serverObj = new ObjectOutputStream(client.getOutputStream());
 			
-			Object clientObj = clientChatterObj.readObject();
-			testClient = (ChatterClient)clientObj;
-			userObj =  testClient.getUser();
-			
-			//this client that just logged on is added to teh hash
-			map.put(userObj, testClient);
-
-            System.out.println("Client connected to server");
-            System.out.println("client obj - " + testClient);
-            System.out.println("client user: " + userObj);
-            
-            //This is the new class
-            UniqueClient clientThread = new UniqueClient(client); 
-            clientThread.start(); //opens the thread for this unique client
-            
-            newMap.put(userObj, clientThread);
+//			Object clientObj = clientChatterObj.readObject();
+//			testClient = (ChatterClient)clientObj;
+//			userObj =  testClient.getUser();
+//			
+//			//this client that just logged on is added to teh hash
+//			map.put(userObj, testClient);
+//
+//            System.out.println("Client connected to server");
+//            System.out.println("client obj - " + testClient);
+//            System.out.println("client user: " + userObj);
+//            
+//            //This is the new class
+//            UniqueClient clientThread = new UniqueClient(client); 
+//            clientThread.start(); //opens the thread for this unique client
+//            
+//            newMap.put(userObj, clientThread);
             
             //clientFrameObj = new ClientFrame(testClient);
             //clientFrameObj.addNewUser(userObj);
