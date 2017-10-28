@@ -89,10 +89,6 @@ public class ChatterServer implements Runnable{
 	            clientThread.start(); //opens the thread for this unique client
 	            
 	            newMap.put(userObj, clientThread);
-	            
-	            //clientFrameObj = new ClientFrame(testClient);
-	            //clientFrameObj.addNewUser(userObj);
-
 
 			}
 			sock.close();
@@ -100,7 +96,7 @@ public class ChatterServer implements Runnable{
 		
 		catch(Exception e)
 		{
-			System.err.println(e);
+			System.err.println("inside accept catch" + e);
 		}
 		
 	}
@@ -109,57 +105,57 @@ public class ChatterServer implements Runnable{
 	@Override
 	public void run()
 	{
-		try
-		{
-			System.out.println("inside Server run");
-			//ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
-			
-			while(keepGoing)
-			{
-		        //String[] parts = in.split()
-		        //map.put(key, value)
-		        Object objReceived = clientChatterObj.readObject();
-		        messageObj = (Message)objReceived;
-		        message = messageObj.getMessage();	
-		        
-		        sender = messageObj.getSender();
-		        recipient = messageObj.getRecipient();
-		        
-		        System.out.println("message obj received : " + messageObj);
-        
-		        
-		        //Sender is attempting to update name
-		        if(message.charAt(0) == '/')
-		        {
-		        		//String userNickname = message;
-		        		sender.setNickname(message);
-		        		//so, I also have to send this nickname to everybody		        		
-		        		sendNickname(message);
-		        	
-		        }
-		        //Sender is attempting to send a message
-		        else
-		        {
-		        		//search has map for recipient
-		        		if(map.containsKey(recipient))
-		        		{
-		        			//send message string to recipient
-		        			//actually, just send the Message object
-		        			sendMessage(recipient, sender, message);
-		        		}
-		        		
-		        		else
-		        		{
-		        			//send a message back to sender saying that their recipient doesn't exist
-		        		}
-		        		        	
-		        }
-			}
-		}
-		catch(Exception e)
-		{
-			
-		}
+//		try
+//		{
+//			System.out.println("inside Server run");
+//			//ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
+//			
+//			while(keepGoing)
+//			{
+//		        //String[] parts = in.split()
+//		        //map.put(key, value)
+//		        Object objReceived = clientChatterObj.readObject();
+//		        messageObj = (Message)objReceived;
+//		        message = messageObj.getMessage();	
+//		        
+//		        sender = messageObj.getSender();
+//		        recipient = messageObj.getRecipient();
+//		        
+//		        System.out.println("message obj received : " + messageObj);
+//        
+//		        
+//		        //Sender is attempting to update name
+//		        if(message.charAt(0) == '/')
+//		        {
+//		        		//String userNickname = message;
+//		        		sender.setNickname(message);
+//		        		//so, I also have to send this nickname to everybody		        		
+//		        		sendNickname(message);
+//		        	
+//		        }
+//		        //Sender is attempting to send a message
+//		        else
+//		        {
+//		        		//search has map for recipient
+//		        		if(map.containsKey(recipient))
+//		        		{
+//		        			//send message string to recipient
+//		        			//actually, just send the Message object
+//		        			sendMessage(recipient, sender, message);
+//		        		}
+//		        		
+//		        		else
+//		        		{
+//		        			//send a message back to sender saying that their recipient doesn't exist
+//		        		}
+//		        		        	
+//		        }
+//			}
+//		}
+//		catch(Exception e)
+//		{
+//			
+//		}
 	}
 	
 
@@ -219,23 +215,24 @@ public class ChatterServer implements Runnable{
 		User senderThread;
 		
 		
-		UniqueClient(Socket sock)//, ChatterClient clientObj, User userObj)	
+		UniqueClient(Socket client)//, ChatterClient clientObj, User userObj)	
 		{
-			this.sock = sock;
+			setSock(client);
+			
 			try
 			{
-				messageObject = new ObjectInputStream(client.getInputStream());
-				serverObj = new ObjectOutputStream(client.getOutputStream());
+				messageObject = new ObjectInputStream(sock.getInputStream());
+				serverObj = new ObjectOutputStream(sock.getOutputStream());
 
 		        //Sender is attempting to update name
-		        if(messageText.charAt(0) == '/')
-		        {
-		        		//String userNickname = message;
-		        		sender.setNickname(messageText);
-		        		//so, I also have to send this nickname to everybody		        		
-		        		sendNickname(messageText);
-		        	
-		        }
+//		        if(messageText.charAt(0) == '/')
+//		        {
+//		        		//String userNickname = message;
+//		        		sender.setNickname(messageText);
+//		        		//so, I also have to send this nickname to everybody		        		
+//		        		sendNickname(messageText);
+//		        	
+//		        }
 		        
 		        //Sender is attempting to send a message
 		        
@@ -261,9 +258,14 @@ public class ChatterServer implements Runnable{
 			}
 			catch(Exception e)
 			{
-				System.err.println(e);
+				System.err.println("in uniqueclient constructor catch : "+e);
 			}
 
+		}
+		
+		private void setSock(Socket client)
+		{
+			this.sock = client;
 		}
 		
 		public void run()

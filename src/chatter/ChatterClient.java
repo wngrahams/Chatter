@@ -18,7 +18,7 @@ public class ChatterClient implements Serializable {
 	private transient ClientFrame clientFrame;
 	private User clientUser;
 	
-	private transient Socket socket;
+	private transient Socket socket; 
 	private String serverIP;
 	private int serverPort;
 	
