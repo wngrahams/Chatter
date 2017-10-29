@@ -1,10 +1,12 @@
 package chatter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import server.ServerFrame;
@@ -13,16 +15,17 @@ import chatter.ChatterClient;
 import client.User;
 import chatter.Message;
 
-public class ChatterServer implements Runnable{
+public class ChatterServer {
 
-	ServerSocket sock;
+	ServerSocket serverSock;
 	Socket client;
 	int port = 0xFFFF;
 	boolean keepGoing = true;
 
 	Map<User,ChatterClient> map = new HashMap<User,ChatterClient>();
 	
-	Map<User,UniqueClient> newMap = new HashMap<User, UniqueClient>();
+	Map<User,ChatterThread> threadMap = new HashMap<User, ChatterThread>();
+	private ArrayList<ChatterThread> threadList;
 	
 	private ServerFrame serverFrame;
 	public ObjectInputStream clientChatterObj;
@@ -46,7 +49,7 @@ public class ChatterServer implements Runnable{
 	}
 	
 	public ChatterServer() {
-		
+		threadList = new ArrayList<ChatterThread>();
 		System.out.println("inside server constructor");
 		acceptClient();
 	}
@@ -61,14 +64,14 @@ public class ChatterServer implements Runnable{
 		
 		try
 		{
-			sock = new ServerSocket(port);
+			serverSock = new ServerSocket(port);
 			
 			//ObjectInputStream clientChatterObj;
 
 			while(keepGoing)
 			{
 				System.out.println("looking for clients");
-				client = sock.accept();
+				client = serverSock.accept();
 				System.out.println("found a client");
 				clientChatterObj = new ObjectInputStream(client.getInputStream());
 				serverObj = new ObjectOutputStream(client.getOutputStream());
@@ -78,202 +81,116 @@ public class ChatterServer implements Runnable{
 				userObj =  testClient.getUser();
 				
 				//this client that just logged on is added to teh hash
-				map.put(userObj, testClient);
+				//map.put(userObj, testClient);
 
 	            System.out.println("Client connected to server");
 	            System.out.println("client obj - " + testClient);
 	            System.out.println("client user: " + userObj);
 	            
 	            //This is the new class
-	            UniqueClient clientThread = new UniqueClient(client); 
+	            ChatterThread clientThread = new ChatterThread(client); 
 	            clientThread.start(); //opens the thread for this unique client
 	            
-	            newMap.put(userObj, clientThread);
+	            System.out.println("inside accept, after thread start, threadobj - " + clientThread);
+	            
+	            threadMap.put(userObj, clientThread);
+	            threadList.add(clientThread);
+
 
 			}
-			sock.close();
+			serverSock.close();
 		}
 		
 		catch(Exception e)
 		{
-			System.err.println("inside accept catch" + e);
+			System.err.println(e);
 		}
 		
 	}
 	
 	
-	@Override
-	public void run()
-	{
-//		try
-//		{
-//			System.out.println("inside Server run");
-//			//ObjectInputStream inputStream = new ObjectInputStream(client.getInputStream());
-//			
-//			while(keepGoing)
-//			{
-//		        //String[] parts = in.split()
-//		        //map.put(key, value)
-//		        Object objReceived = clientChatterObj.readObject();
-//		        messageObj = (Message)objReceived;
-//		        message = messageObj.getMessage();	
-//		        
-//		        sender = messageObj.getSender();
-//		        recipient = messageObj.getRecipient();
-//		        
-//		        System.out.println("message obj received : " + messageObj);
-//        
-//		        
-//		        //Sender is attempting to update name
-//		        if(message.charAt(0) == '/')
-//		        {
-//		        		//String userNickname = message;
-//		        		sender.setNickname(message);
-//		        		//so, I also have to send this nickname to everybody		        		
-//		        		sendNickname(message);
-//		        	
-//		        }
-//		        //Sender is attempting to send a message
-//		        else
-//		        {
-//		        		//search has map for recipient
-//		        		if(map.containsKey(recipient))
-//		        		{
-//		        			//send message string to recipient
-//		        			//actually, just send the Message object
-//		        			sendMessage(recipient, sender, message);
-//		        		}
-//		        		
-//		        		else
-//		        		{
-//		        			//send a message back to sender saying that their recipient doesn't exist
-//		        		}
-//		        		        	
-//		        }
-//			}
-//		}
-//		catch(Exception e)
-//		{
-//			
-//		}
-	}
 	
 
 	
 	//receive Message object
 	public void sendMessage(User recipient, User sender, String message)
 	{
-		System.out.println("inside sendMessage");
-		UniqueClient recipientThread = newMap.get(recipient);
-		
-		/*
-		if(newMap.containsKey(recipient))
-		{
-			System.out.println("inside sendMessage, our map contains recipient"
-					+ "sending ms : " + message);
-			recipientThread = newMap.get(recipient);
-			recipientThread.writeMessage(message);
-		}*/
-		
+		System.out.println("inside sendMessage"); 
+
+		//sending a group message, so it has to be send to the "sender" as well
 		if(recipient == null)
 		{
-			//sending a group message, so it has to be send to the "sender" as well
-			//System.out.println("inside recipient = null");
+			for(int i = 0; i<threadList.size(); i++)
+			{
+				ChatterThread receiver = threadList.get(i);
+				receiver.writeMessage(message);
+			}
 		}
-		
+		//private message
 		else
 		{
-			//sending private message
-			//establish connection, 
-			//System.out.println("inside recipient != null..");
-			//System.out.println("recipient - "+ recipient.getNickname());
-			//recipientThread.writeMessage(message);
-			
-			//null pointer exception bc Jim is not actually a user connected to the server
-			//Jim has no socket.
-			
-		}
-		
+			if(threadMap.containsKey(recipient))
+			{
+				ChatterThread recipientThread = threadMap.get(recipient);
+				System.out.println("inside sendMessage, our map contains recipient"
+						+ "sending ms : " + message);
+				recipientThread = threadMap.get(recipient);
+				recipientThread.writeMessage(message);
+			}
+			else
+			{
+				//"recipient" user does not exist in our list
+				//send something back to the sender telling them
+			}
+		}				
 	}
 	
-	public void sendNickname(String nick)
+	public void sendNickname(User user, String nick)
 	{
 		//instead of sending message, send string "nickname" to everybody
+		sender.setNickname(nick);
+		for(int i = 0; i<threadList.size(); i++)
+		{
+			ChatterThread receiver = threadList.get(i);
+			//go through each client's thread
+			//TODO: iterate through that client's JList until you get to "user" who is changing
+			//their name, then update the name 
+		}
 	}
 	
 
 	
-	class UniqueClient extends Thread
+	class ChatterThread extends Thread
 	{
 		Socket sock;
-		ObjectInputStream messageObject;
-		ObjectOutputStream serverObj;
+		ObjectInputStream clientInput;
+		ObjectOutputStream serverOutput;
 		Message receivedMsgObj;
 		String messageText;
 		
-		User recipientThread;
-		User senderThread;
+		User recipientUser;
+		User senderUser;
 		
 		
-		UniqueClient(Socket client)//, ChatterClient clientObj, User userObj)	
+		ChatterThread(Socket client)//, ChatterClient clientObj, User userObj)	
 		{
-			setSock(client);
-			
+			this.sock = client;
 			try
 			{
-				messageObject = new ObjectInputStream(sock.getInputStream());
-				serverObj = new ObjectOutputStream(sock.getOutputStream());
-
-		        //Sender is attempting to update name
-//		        if(messageText.charAt(0) == '/')
-//		        {
-//		        		//String userNickname = message;
-//		        		sender.setNickname(messageText);
-//		        		//so, I also have to send this nickname to everybody		        		
-//		        		sendNickname(messageText);
-//		        	
-//		        }
-		        
-		        //Sender is attempting to send a message
-		        
-//		        else
-//		        {
-//		        		System.out.println("insdie unique client sock, else");
-//		        		//sendMessage(recipientThread, senderThread, messageText);
-//		        		//search has map for recipient
-//		        		if(map.containsKey(recipient))
-//		        		{
-//		        			//send message string to recipient
-//		        			//actually, just send the Message object
-//		        			sendMessage(recipient, sender, message);
-//		        		}
-//		        		
-//		        		else
-//		        		{
-//		        			//send a message back to sender saying that their recipient doesn't exist
-//		        		}
-//		        		        	
-//		        }
+				clientInput = new ObjectInputStream(client.getInputStream());
+				serverOutput = new ObjectOutputStream(client.getOutputStream());
 		        
 			}
 			catch(Exception e)
 			{
-				System.err.println("in uniqueclient constructor catch : "+e);
+				System.err.println(e);
 			}
 
 		}
 		
-		private void setSock(Socket client)
-		{
-			this.sock = client;
-		}
-		
 		public void run()
 		{
-			//here is where I'll have to call "sendMessage" method
-			//sendMessage(recipientThread, senderThread, messageText);
-			//so we are trying to send messageText from sender to recipient (both user obj)
-			
+
 			System.out.println("inside UniqueClient run");
 			
 			boolean kg = true;
@@ -281,29 +198,61 @@ public class ChatterServer implements Runnable{
 			{
 				try
 				{
-					//System.out.println("message obj received : ");
-			        Object objReceived = messageObject.readObject();
+					System.out.println("message obj received : ");
+					
+
+					receivedMsgObj = (Message)clientInput.readObject();
+					//^this is where the nullpointer exception is happening^
+					
+					
 			        //System.out.println("message obj received : " + objReceived );
-			        receivedMsgObj = (Message)objReceived;
+
 			        messageText = receivedMsgObj.getMessage();	
+			        senderUser= receivedMsgObj.getSender();
+			        recipientUser = receivedMsgObj.getRecipient();
 			        
-			        senderThread = receivedMsgObj.getSender();
-			        recipientThread = receivedMsgObj.getRecipient();
+			        System.out.println("receiver = " + recipientUser + "sender = " + senderUser);
+			        System.out.println("message obj received, msg = " + messageText);
+					
+			        //Sender is attempting to update name
+			        if(messageText.charAt(0) == '/')
+			        {
+			        		//String userNickname = message;
+			        		// TODO: read out '/' character and create a new string
+		        			senderUser.setNickname(messageText);  
+			        		sendNickname(senderUser, messageText);	
+			        }
 			        
-			        System.out.println("message obj received. Sender = " + senderThread.getNickname()
-			        + "recipient = " + recipientThread.getNickname() + "msg" + messageText);
+			        else
+			        {
+			        		//send message
+			        		sendMessage(recipientUser, senderUser, messageText);
+			        	
+			        }
 				}
 				catch(Exception e)
 				{
-					
+					System.err.println("exception caught in run - "+e);
 				}
 			}
 			
-			if(map.containsKey(recipientThread))
-			{
-				//sendMessage(recipientThread, senderThread, messageText);
-			}
+			//close();
+		}
 
+		private void close() {
+			// try to close the connection
+			try {
+				if(serverObj != null) serverObj.close();
+			}
+			catch(Exception e) {}
+			try {
+				if(clientInput != null) clientInput.close();
+			}
+			catch(Exception e) {};
+			try {
+				if(sock != null) sock.close();
+			}
+			catch (Exception e) {}
 		}
 		
 		
@@ -312,7 +261,7 @@ public class ChatterServer implements Runnable{
 			System.out.println("inside writeMessage");
 			try
 			{
-				serverObj.writeObject(message);
+				serverOutput.writeObject(message);
 			}
 			catch(Exception e)
 			{
@@ -323,10 +272,3 @@ public class ChatterServer implements Runnable{
 	}
 		
 }
-
-
-
-//as clients join the server, the server must update the ClientFrame so that they see other users
-
-//if I start up a client and send a msg to one user, teh "run" method runs and sendMessage is called
-//but if I click on another user to send a message, the "run" method never gets called

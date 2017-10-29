@@ -131,6 +131,7 @@ public class Server {
 		for(int i = al.size(); --i >= 0;) {
 			ClientThread ct = al.get(i);
 			// try to write to the Client if it fails remove it from the list
+
 			if(!ct.writeMsg(messageLf)) {
 				al.remove(i);
 				display("Disconnected Client " + ct.username + " removed from list.");
@@ -198,17 +199,17 @@ public class Server {
 		String date;
 
 		// Constructore
-		ClientThread(Socket socket) {
+		ClientThread(Socket client) {
 			// a unique id
 			id = ++uniqueId;
-			this.socket = socket;
+			this.socket = client;
 			/* Creating both Data Stream */
 			System.out.println("Thread trying to create Object Input/Output Streams");
 			try
 			{
 				// create output first
-				sOutput = new ObjectOutputStream(socket.getOutputStream());
-				sInput  = new ObjectInputStream(socket.getInputStream());
+				sOutput = new ObjectOutputStream(client.getOutputStream());
+				sInput  = new ObjectInputStream(client.getInputStream());
 				// read the username
 				username = (String) sInput.readObject();
 				display(username + " just connected.");
