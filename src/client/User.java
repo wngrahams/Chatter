@@ -17,6 +17,10 @@ public class User implements Serializable {
 		ipAddress = "localhost";
 	}
 	
+	public User(String name) {
+		this(name, "localhost");
+	}
+	
 	public User(String name, String ip) {
 		nickname = name;
 		ipAddress = ip;
@@ -37,6 +41,9 @@ public class User implements Serializable {
 	
 	@Override
 	public String toString() {
+		if (nickname == null)
+			return "server";
+		
 		return nickname;
 	}
 }
