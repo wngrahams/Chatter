@@ -170,7 +170,7 @@ public class ChatterClient implements Serializable {
 	}
 	
 	public void sendMessage(String text, User recipient) {
-		Message messageToSend = new Message(recipient, clientUser, text);
+		Message messageToSend = new Message(recipient, clientUser, text, 2);
 		Thread messageThread = new Thread(new messageSender(messageToSend));
 		messageThread.start();
 	}
@@ -184,8 +184,29 @@ public class ChatterClient implements Serializable {
 		public void run() {
 			while (true) {
 				try {
-					Message messageRecieved = (Message)(fromServer.readObject());
-					clientFrame.displayMessage(messageRecieved);
+					Message messageRecieved = (Message)(fromServer.readObject());// = (Message)(fromServer.readObject());
+					int messageType = messageRecieved.getType();
+					User userToAdd = messageRecieved.getSender();
+					
+					System.out.println("inside clientlistener run, messageType = "+ messageType);
+					//clientFrame.addNewUser(userToAdd);
+					
+					//clientFrame.displayMessage(messageRecieved);
+
+					
+					//if/else if statements in here. need to distinguish what user is sending
+					//its either a message to add to the user's frame, or its a user 
+					//to add to the user's jlist
+
+					if(messageType == 1)
+					{
+						clientFrame.addNewUser(userToAdd);
+					}
+					else
+					{
+						clientFrame.displayMessage(messageRecieved);
+					}
+					//clientFrame.addNewUser();
 				} catch (ClassNotFoundException | IOException e) {
 					clientFrame.displayMessage(new Message("Disconnected from server"));
 					disconnectFromServer();

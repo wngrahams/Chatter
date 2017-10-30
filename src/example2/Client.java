@@ -27,7 +27,7 @@ public class Client  {
 	 *  port: the port number
 	 *  username: the username
 	 */
-	Client(String server, int port, String username) {
+	Client(String server, int port, String username) { 
 		// which calls the common constructor with the GUI set to null
 		this(server, port, username, null);
 	}

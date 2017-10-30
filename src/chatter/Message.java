@@ -13,15 +13,19 @@ public class Message implements Serializable {
 	private String message;
 	private User recipient;
 	private User sender;
+	private static int NEWUSER = 1;
+	private static int MESSAGE = 2;
+	private int type;
 	
 	public Message(String text) {
-		this(null, null, text);
+		this(null, null, text, 0);
 	}
 
-	public Message(User to, User from, String text) {
+	public Message(User to, User from, String text, int type) {
 		setRecipient(to);
 		setSender(from);
 		setMessage(text);
+		setType(type);
 		
 	}
 
@@ -60,5 +64,13 @@ public class Message implements Serializable {
 		else 
 			output = "Message from server: " + message;
 		return output;
+	}
+	
+	public int getType() {
+		return type;
+	}
+	
+	public void setType(int messageType) {
+		type = messageType;
 	}
 }

@@ -84,7 +84,7 @@ public class ChatterServer {
 	            System.out.println("client user: " + userObj);
 	            
 	            //This is the new class
-	            ChatterThread clientThread = new ChatterThread(client, clientChatterObj, serverObj); 
+	            ChatterThread clientThread = new ChatterThread(client, clientChatterObj, serverObj, userObj); 
 	            clientThread.start(); //opens the thread for this unique client
 	            
 	            //System.out.println("inside accept, after thread start, threadobj - " + clientThread);
@@ -112,6 +112,17 @@ public class ChatterServer {
 	public void sendMessage(Message message)//User recipient, User sender, String message)
 	{
 		User recipient = message.getRecipient();
+		
+		//sending a new user
+//		
+//		if(message.getType() == 1)
+//		{
+//			for(int i = 0; i<threadList.size(); i++)
+//			{
+//				ChatterThread receiver = threadList.get(i);
+//				receiver.writeMessage(message);
+//			}
+//		}
 
 		//sending a group message, so it has to be send to the "sender" as well
 		if(recipient.toString() == "global chat")
@@ -128,6 +139,7 @@ public class ChatterServer {
 		{
 			if(threadMap.containsKey(recipient))
 			{
+				System.out.println("inside sendMessage.. contains recipient");
 				ChatterThread recipientThread = threadMap.get(recipient);
 				System.out.println("inside sendMessage, our map contains recipient"
 						+ "sending ms : " + message);
@@ -155,6 +167,17 @@ public class ChatterServer {
 		}
 	}
 	
+	public void sendUser(User user)
+	{
+		
+		for(int i = 0; i<threadList.size(); i++)
+		{
+			ChatterThread receiver = threadList.get(i);
+			Message newUser = new Message(null, user, null, 1);
+			receiver.writeMessage(newUser);
+		}
+	}
+	
 
 	
 	class ChatterThread extends Thread
@@ -168,8 +191,12 @@ public class ChatterServer {
 		User recipientUser;
 		User senderUser;
 		
+		User newUserToAdd;
 		
-		ChatterThread(Socket client, ObjectInputStream inStream, ObjectOutputStream outStream)//, ChatterClient clientObj, User userObj)	
+		int messageType;
+		
+		
+		ChatterThread(Socket client, ObjectInputStream inStream, ObjectOutputStream outStream, User userObj)//, ChatterClient clientObj, User userObj)	
 		{
 			this.sock = client;
 			try 
@@ -181,29 +208,46 @@ public class ChatterServer {
 			{
 				System.err.println(e);
 			}
+			
+			newUserToAdd = userObj;
 		}
 		
 		public void run()
 		{
-
-			System.out.println("inside UniqueClient run");
-			
+			System.out.println("inside UniqueClient run");			
 			boolean kg = true;
 			while(kg)
 			{
 				try
 				{
 					System.out.println("message obj received");
+					System.out.println("sender - " + newUserToAdd);
 					
-
+					sendUser(newUserToAdd);
+					
 					receivedMsgObj = (Message)clientInput.readObject();
 					
+					messageType = receivedMsgObj.getType();
 					senderUser = receivedMsgObj.getSender();
 					messageText = receivedMsgObj.getMessage();
 					recipientUser = receivedMsgObj.getRecipient();
 							
 					System.out.println("sender + message = " + senderUser+" : " + messageText);
 					System.out.println("addressed to = " + recipientUser);
+					
+					
+					if(receivedMsgObj.getMessage() == null)
+					{
+						System.out.println("inside message == null");
+						receivedMsgObj.setType(1);
+						sendMessage(receivedMsgObj);
+					}
+					else
+					{
+						receivedMsgObj.setType(2);
+						sendMessage(receivedMsgObj);
+					}
+
 				}
 				catch(Exception e)
 				{
@@ -223,7 +267,7 @@ public class ChatterServer {
 			        else
 			        {
 			        		//send message
-						sendMessage(receivedMsgObj);
+						//sendMessage(receivedMsgObj);
 			        	
 			        }
 
@@ -260,7 +304,20 @@ public class ChatterServer {
 			}
 			catch(Exception e)
 			{
-				
+				System.err.println(e);
+			}
+
+		}
+		
+		public void writeUser(User user)
+		{
+			try
+			{
+				serverOutput.writeObject(user);
+			}
+			catch(Exception e)
+			{
+				System.err.println(e);
 			}
 
 		}

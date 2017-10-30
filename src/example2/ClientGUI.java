@@ -67,7 +67,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
-
+ 
 		// the 3 buttons
 		login = new JButton("Login");
 		login.addActionListener(this);
