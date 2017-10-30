@@ -50,7 +50,8 @@ public class ChatterClient implements Serializable {
 		serverIP = ip;
 		serverPort = port;
 		
-		connectToServer();
+		if(!connectToServer())
+			disconnectFromServer();
 	}
 
 	private boolean connectToServer() {
@@ -124,12 +125,9 @@ public class ChatterClient implements Serializable {
 		public void run() {
 			try {	
 				toServer.writeObject(messageToSend);
-				System.out.println("Sending message: " + messageToSend);
-				toServer.flush();
 			} catch (IOException e) {
-				Message errorMessage = new Message(clientUser, null, "Error sending message to " + messageToSend.getRecipient());
+				Message errorMessage = new Message("Error sending message to " + messageToSend.getRecipient());
 				clientFrame.displayMessage(errorMessage);
-//				System.err.println(e);
 			} 
 		}
 	}
