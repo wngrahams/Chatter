@@ -13,6 +13,10 @@ public class Message implements Serializable {
 	private String message;
 	private User recipient;
 	private User sender;
+	
+	public Message(String text) {
+		this(null, null, text);
+	}
 
 	public Message(User to, User from, String text) {
 		setRecipient(to);
@@ -30,6 +34,9 @@ public class Message implements Serializable {
 	}
 	
 	public User getRecipient() {
+		if (null == recipient)
+			return new User("global chat");
+		
 		return recipient;
 	}
 

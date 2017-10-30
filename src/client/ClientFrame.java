@@ -68,10 +68,14 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		User messageRecipient = serverMessage.getRecipient();
 
 		// navigate to correct tab or create new tab
-		if (connectedClient.getUser() == messageSender)
-			goToTab(messageRecipient);
-		else if (connectedClient.getUser() == messageRecipient)
-			goToTab(messageSender);
+		if (messageSender != null) {
+			if (connectedClient.getUser() == messageSender) {
+				goToTab(messageRecipient);
+			}
+			else if (connectedClient.getUser() == messageRecipient) {
+				goToTab(messageSender);
+			}
+		}
 
 		// display text
 		printToCurrentTab(serverMessage);
