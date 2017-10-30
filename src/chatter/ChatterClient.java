@@ -25,7 +25,7 @@ public class ChatterClient implements Serializable {
 	
 	private transient ObjectOutputStream toServer;
 	private transient ObjectInputStream fromServer;
-
+ 
 	public static void main(String[] args) {
 		ChatterClient cc;
 		if (args.length < 1)

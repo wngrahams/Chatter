@@ -60,12 +60,16 @@ public class Server {
 				// if I was asked to stop
 				if(!keepGoing)
 					break;
-				ClientThread t = new ClientThread(socket);  // make a thread of it
+				ClientThread t = new ClientThread(socket); // make a thread of it
+				System.out.println("inside start, after new thread");
+				
 				al.add(t);									// save it in the ArrayList
 				t.start();
 			}
 			// I was asked to stop
 			try {
+				System.out.println("inside try, close in start");
+				
 				serverSocket.close();
 				for(int i = 0; i < al.size(); ++i) {
 					ClientThread tc = al.get(i);
@@ -228,6 +232,7 @@ public class Server {
 		// what will run forever
 		public void run() {
 			// to loop until LOGOUT
+			System.out.println("inside run, in thread class");
 			boolean keepGoing = true;
 			while(keepGoing) {
 				// read a String (which is an object)
@@ -246,7 +251,7 @@ public class Server {
 
 				// Switch on the type of message receive
 				switch(cm.getType()) {
-
+					
 				case ChatMessage.MESSAGE:
 					broadcast(username + ": " + message);
 					break;
@@ -261,6 +266,7 @@ public class Server {
 						ClientThread ct = al.get(i);
 						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
 					}
+					System.out.println("inside switch, in thread class, after cases");
 					break;
 				}
 			}
@@ -273,6 +279,7 @@ public class Server {
 		// try to close everything
 		private void close() {
 			// try to close the connection
+			System.out.println("inside close, in thread class");
 			try {
 				if(sOutput != null) sOutput.close();
 			}

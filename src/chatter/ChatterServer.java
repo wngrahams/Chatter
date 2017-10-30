@@ -69,29 +69,25 @@ public class ChatterServer {
 			//ObjectInputStream clientChatterObj;
 
 			while(keepGoing)
-			{
+			{ 
 				System.out.println("looking for clients");
 				client = serverSock.accept();
 				System.out.println("found a client");
+				
 				clientChatterObj = new ObjectInputStream(client.getInputStream());
 				serverObj = new ObjectOutputStream(client.getOutputStream());
-				
+
 				Object clientObj = clientChatterObj.readObject();
-				testClient = (ChatterClient)clientObj;
-				userObj =  testClient.getUser();
-				
-				//this client that just logged on is added to teh hash
-				//map.put(userObj, testClient);
+				userObj = (User)clientObj;
 
 	            System.out.println("Client connected to server");
-	            System.out.println("client obj - " + testClient);
 	            System.out.println("client user: " + userObj);
 	            
 	            //This is the new class
-	            ChatterThread clientThread = new ChatterThread(client); 
+	            ChatterThread clientThread = new ChatterThread(client, clientChatterObj); 
 	            clientThread.start(); //opens the thread for this unique client
 	            
-	            System.out.println("inside accept, after thread start, threadobj - " + clientThread);
+	            //System.out.println("inside accept, after thread start, threadobj - " + clientThread);
 	            
 	            threadMap.put(userObj, clientThread);
 	            threadList.add(clientThread);
@@ -172,14 +168,16 @@ public class ChatterServer {
 		User senderUser;
 		
 		
-		ChatterThread(Socket client)//, ChatterClient clientObj, User userObj)	
+		ChatterThread(Socket client, ObjectInputStream inStream)//, ChatterClient clientObj, User userObj)	
 		{
 			this.sock = client;
 			try
 			{
-				clientInput = new ObjectInputStream(client.getInputStream());
-				serverOutput = new ObjectOutputStream(client.getOutputStream());
+//				clientInput = new ObjectInputStream(client.getInputStream());
+//				serverOutput = new ObjectOutputStream(client.getOutputStream());
 		        
+				clientInput = inStream;
+				
 			}
 			catch(Exception e)
 			{
@@ -198,42 +196,49 @@ public class ChatterServer {
 			{
 				try
 				{
-					System.out.println("message obj received : ");
+					System.out.println("message obj received");
 					
 
 					receivedMsgObj = (Message)clientInput.readObject();
-					//^this is where the nullpointer exception is happening^
 					
-					
-			        //System.out.println("message obj received : " + objReceived );
-
-			        messageText = receivedMsgObj.getMessage();	
-			        senderUser= receivedMsgObj.getSender();
-			        recipientUser = receivedMsgObj.getRecipient();
-			        
-			        System.out.println("receiver = " + recipientUser + "sender = " + senderUser);
-			        System.out.println("message obj received, msg = " + messageText);
-					
-			        //Sender is attempting to update name
-			        if(messageText.charAt(0) == '/')
-			        {
-			        		//String userNickname = message;
-			        		// TODO: read out '/' character and create a new string
-		        			senderUser.setNickname(messageText);  
-			        		sendNickname(senderUser, messageText);	
-			        }
-			        
-			        else
-			        {
-			        		//send message
-			        		sendMessage(recipientUser, senderUser, messageText);
-			        	
-			        }
+					senderUser = receivedMsgObj.getSender();
+					messageText = receivedMsgObj.getMessage();
+					recipientUser = receivedMsgObj.getRecipient();
+							
+					System.out.println("sender + message = " + senderUser+" : " + messageText);
+					System.out.println("addressed to = " + recipientUser);
 				}
 				catch(Exception e)
 				{
 					System.err.println("exception caught in run - "+e);
 				}
+					
+					
+			        //System.out.println("message obj received : " + objReceived );
+
+//			        messageText = receivedMsgObj.getMessage();	
+//			        senderUser= receivedMsgObj.getSender();
+//			        recipientUser = receivedMsgObj.getRecipient();
+//			        
+//			        System.out.println("receiver = " + recipientUser + "sender = " + senderUser);
+//			        System.out.println("message obj received, msg = " + messageText);
+					
+			        //Sender is attempting to update name
+//			        if(messageText.charAt(0) == '/')
+//			        {
+//			        		//String userNickname = message;
+//			        		// TODO: read out '/' character and create a new string
+//		        			senderUser.setNickname(messageText);  
+//			        		sendNickname(senderUser, messageText);	
+//			        }
+//			        
+//			        else
+//			        {
+//			        		//send message
+//			        		sendMessage(recipientUser, senderUser, messageText);
+//			        	
+//			        }
+
 			}
 			
 			//close();
@@ -270,5 +275,19 @@ public class ChatterServer {
 
 		}
 	}
+	
+	/*
+	 * alright so here is what as happening : the server wasn't able to connect any new 
+	 * clients because control was never being passed back to the Server accept() method.
+	 * This was because once a new client thread was created in accept() control was passed
+	 * to the thread class where control was getting stuck in the constructor because
+	 * it was looking for an input stream to read, but we already read out the input stream
+	 * 
+	 * 
+	 * so I need to pass the input stream we take in the accept() method.
+	 */
 		
 }
+
+
+
