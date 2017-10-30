@@ -92,6 +92,24 @@ public class ChatterClient implements Serializable {
 	
 	public void disconnectFromServer() {
 		// disconnect from the server:
+		try {
+			if (fromServer != null) {
+				fromServer.close();
+				fromServer = null;
+			}
+			if (toServer != null) {
+				toServer.close();
+				toServer = null;
+			}
+			if (socket != null) {
+				socket.close();
+				socket = null;
+			}
+		} catch (IOException e) {
+			clientFrame.displayMessage(new Message("Error disconnecting from server."));
+		}
+		
+		clientFrame.displayMessage(new Message("Disonnected from server."));
 	}
 	
 	public User getUser() {
