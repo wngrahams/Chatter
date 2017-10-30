@@ -69,8 +69,8 @@ public class ChatterClient implements Serializable {
 		clientFrame.displayMessage(new Message("Connection successful."));
 		
 		try {
-			toServer = new ObjectOutputStream(socket.getOutputStream());
 			fromServer = new ObjectInputStream(socket.getInputStream());
+			toServer = new ObjectOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			clientFrame.displayMessage(new Message("Error connecting to server input/output streams."));
 			return false;
@@ -80,7 +80,8 @@ public class ChatterClient implements Serializable {
 		new ServerListener().start();
 		
 		try {
-			toServer.writeObject(clientUser);
+			Message logon = new Message(clientUser, Message.USER_MESSAGE);
+			toServer.writeObject(logon);
 		} catch (IOException e) {
 			clientFrame.displayMessage(new Message("Error sending user information to server."));
 			return false;
@@ -150,24 +151,24 @@ public class ChatterClient implements Serializable {
 		}
 	}
 	
-	public void recieveMessage() {
-		try {
-			fromServer = new ObjectInputStream(socket.getInputStream());
-			if (fromServer != null) {
-				Message serverMessage = (Message)(fromServer.readObject());
-				if (null != serverMessage) {
-					clientFrame.displayMessage(serverMessage);
-					System.out.println("Recieved message: " + serverMessage);
-				}
-				else
-					System.err.println("No Message recieved");
-			}
-		} catch (IOException e) {
-			System.err.println(e);
-		} catch (ClassNotFoundException e) {
-			System.err.print(e);
-		}
-	}
+//	public void recieveMessage() {
+//		try {
+//			fromServer = new ObjectInputStream(socket.getInputStream());
+//			if (fromServer != null) {
+//				Message serverMessage = (Message)(fromServer.readObject());
+//				if (null != serverMessage) {
+//					clientFrame.displayMessage(serverMessage);
+//					System.out.println("Recieved message: " + serverMessage);
+//				}
+//				else
+//					System.err.println("No Message recieved");
+//			}
+//		} catch (IOException e) {
+//			System.err.println(e);
+//		} catch (ClassNotFoundException e) {
+//			System.err.print(e);
+//		}
+//	}
 	
 	public void sendMessage(String text, User recipient) {
 		Message messageToSend = new Message(recipient, clientUser, text);

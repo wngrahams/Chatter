@@ -67,18 +67,26 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		User messageSender = serverMessage.getSender();
 		User messageRecipient = serverMessage.getRecipient();
 
-		// navigate to correct tab or create new tab
-		if (messageSender != null) {
-			if (connectedClient.getUser() == messageSender) {
-				goToTab(messageRecipient);
+		if (serverMessage.getType() == Message.TEXT_MESSAGE) {
+			// navigate to correct tab or create new tab
+			if (messageSender != null) {
+				if (connectedClient.getUser() == messageSender) {
+					goToTab(messageRecipient);
+				}
+				else if (connectedClient.getUser() == messageRecipient) {
+					goToTab(messageSender);
+				}
 			}
-			else if (connectedClient.getUser() == messageRecipient) {
-				goToTab(messageSender);
+	
+			// display text
+			printToCurrentTab(serverMessage);
+		}
+		else if (serverMessage.getType() == Message.USER_MESSAGE) {
+			if (serverMessage.getSender() != connectedClient.getUser()) {
+//				printToGlobal(serverMessage);
+				addNewUser(serverMessage.getSender());
 			}
 		}
-
-		// display text
-		printToCurrentTab(serverMessage);
 	}
 	
 	private void goToTab(User u) {
@@ -172,6 +180,13 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	
 	private void printToCurrentTab(Message message) {
 		JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
+		currentTextDisplay.append(message + "\n");
+		
+		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void printToGlobal(Message message) {
+		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
 		
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
