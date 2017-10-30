@@ -11,6 +11,8 @@ public class User implements Serializable {
 	private String nickname;
 	private String ipAddress; 
 	
+	public static final User SERVER = null;
+	
 	public User() {
 		int rand = (int) (Math.random() * 100000 + 1);
 		nickname = "user" + Integer.toString(rand);
@@ -22,8 +24,13 @@ public class User implements Serializable {
 	}
 	
 	public User(String name, String ip) {
-		nickname = name;
+		setNickname(name);
 		ipAddress = ip;
+	}
+	
+	public User(User otherUser) {
+		setNickname(otherUser.getNickname());
+		ipAddress = otherUser.getIP();
 	}
 	
 	public String getIP() {
@@ -34,7 +41,6 @@ public class User implements Serializable {
 		return nickname;
 	}
 	
-	//changed to public
 	public void setNickname(String name) {
 		nickname = name;
 	}
