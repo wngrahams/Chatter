@@ -84,7 +84,7 @@ public class ChatterServer {
 	            System.out.println("client user: " + userObj);
 	            
 	            //This is the new class
-	            ChatterThread clientThread = new ChatterThread(client, clientChatterObj); 
+	            ChatterThread clientThread = new ChatterThread(client, clientChatterObj, serverObj); 
 	            clientThread.start(); //opens the thread for this unique client
 	            
 	            //System.out.println("inside accept, after thread start, threadobj - " + clientThread);
@@ -109,13 +109,14 @@ public class ChatterServer {
 
 	
 	//receive Message object
-	public void sendMessage(User recipient, User sender, String message)
+	public void sendMessage(Message message)//User recipient, User sender, String message)
 	{
-		System.out.println("inside sendMessage"); 
+		User recipient = message.getRecipient();
 
 		//sending a group message, so it has to be send to the "sender" as well
-		if(recipient == null)
+		if(recipient.toString() == "global chat")
 		{
+			System.out.println("inside sendMessage, recipient = global chat"); 
 			for(int i = 0; i<threadList.size(); i++)
 			{
 				ChatterThread receiver = threadList.get(i);
@@ -168,22 +169,18 @@ public class ChatterServer {
 		User senderUser;
 		
 		
-		ChatterThread(Socket client, ObjectInputStream inStream)//, ChatterClient clientObj, User userObj)	
+		ChatterThread(Socket client, ObjectInputStream inStream, ObjectOutputStream outStream)//, ChatterClient clientObj, User userObj)	
 		{
 			this.sock = client;
-			try
-			{
-//				clientInput = new ObjectInputStream(client.getInputStream());
-//				serverOutput = new ObjectOutputStream(client.getOutputStream());
-		        
+			try 
+			{  
+				serverOutput = outStream;
 				clientInput = inStream;
-				
 			}
 			catch(Exception e)
 			{
 				System.err.println(e);
 			}
-
 		}
 		
 		public void run()
@@ -213,31 +210,22 @@ public class ChatterServer {
 					System.err.println("exception caught in run - "+e);
 				}
 					
-					
-			        //System.out.println("message obj received : " + objReceived );
-
-//			        messageText = receivedMsgObj.getMessage();	
-//			        senderUser= receivedMsgObj.getSender();
-//			        recipientUser = receivedMsgObj.getRecipient();
-//			        
-//			        System.out.println("receiver = " + recipientUser + "sender = " + senderUser);
-//			        System.out.println("message obj received, msg = " + messageText);
-					
 			        //Sender is attempting to update name
-//			        if(messageText.charAt(0) == '/')
-//			        {
-//			        		//String userNickname = message;
-//			        		// TODO: read out '/' character and create a new string
-//		        			senderUser.setNickname(messageText);  
-//			        		sendNickname(senderUser, messageText);	
-//			        }
-//			        
-//			        else
-//			        {
-//			        		//send message
-//			        		sendMessage(recipientUser, senderUser, messageText);
-//			        	
-//			        }
+			        if(messageText.charAt(0) == '/')
+			        {
+			        		System.out.println("inside messageText. /");
+			        		//String userNickname = message;
+			        		// TODO: read out '/' character and create a new string
+		        			senderUser.setNickname(messageText);  
+			        		//sendNickname(senderUser, messageText);	
+			        }
+			        
+			        else
+			        {
+			        		//send message
+						sendMessage(receivedMsgObj);
+			        	
+			        }
 
 			}
 			
@@ -261,12 +249,14 @@ public class ChatterServer {
 		}
 		
 		
-		public void writeMessage(String message)
+		public void writeMessage(Message message)//String message)
 		{
 			System.out.println("inside writeMessage");
 			try
 			{
+				System.out.println("inside writing, writing following obj - " + message);
 				serverOutput.writeObject(message);
+				System.out.println("inside writing, wrote following obj - " + message);
 			}
 			catch(Exception e)
 			{

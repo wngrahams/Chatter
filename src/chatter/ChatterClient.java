@@ -178,7 +178,7 @@ public class ChatterClient implements Serializable {
 	/**
 	 * Thread class to constantly listen to the server
 	 */
-	public class ServerListener extends Thread {
+	public class ServerListener extends Thread { 
 		
 		@Override
 		public void run() {
