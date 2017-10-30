@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import client.ChatterCient;
 import client.ClientFrame;
 import client.User;
 
