@@ -51,7 +51,7 @@ public class ChatterServer {
 			for (int i=0; i<threadList.size(); i++) {
 				if (threadList.get(i) != reciever) {
 					ChatterThread otherClient = threadList.get(i);
-					reciever.sendMessage(new Message(otherClient.clientUser, Message.USER_MESSAGE));
+					reciever.sendMessage(new Message(otherClient.clientUser, Message.USER_LOGON_MESSAGE));
 				}
 			}
 		}
@@ -66,6 +66,7 @@ public class ChatterServer {
 	private void sendMessageToClient(Message m) {
 		synchronized(threadList) {
 			if (m.getRecipient() == User.SERVER) {
+				System.out.println("broadcasting logoff message");
 				// Send message to all clients
 				for (int i=0; i<threadList.size(); i++) {
 					ChatterThread clientRecipient = threadList.get(i);
@@ -89,6 +90,7 @@ public class ChatterServer {
 				
 		try {
 			ServerSocket serverSocket = new ServerSocket(port);
+			serverFrame.displayMessage(new Message("Successfully started server. IP: " + serverSocket.getInetAddress() + " Port: " + port));
 			
 			while (keepGoing) {
 				serverFrame.displayMessage(new Message("Ready to receive clients..."));
@@ -146,8 +148,7 @@ public class ChatterServer {
 				userMessage = (Message)(recieve.readObject());
 				clientUser = userMessage.getSender();
 				
-//				System.out.println(clientUser + " connected");
-				serverFrame.displayMessage(new Message(clientUser, Message.USER_MESSAGE));
+				serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGON_MESSAGE));
 			} catch (IOException e) {
 				serverFrame.displayMessage(new Message("Error connecting client input/output stream"));
 				return;
@@ -195,7 +196,8 @@ public class ChatterServer {
 					serverFrame.displayMessage(new Message("Unknown object recieved from " + clientUser));
 					break;
 				} catch (IOException e) {
-					serverFrame.displayMessage(new Message(clientUser + " has disconnected"));
+//					serverFrame.displayMessage(new Message(clientUser + " has disconnected"));
+					serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGOFF_MESSAGE));
 					break;
 				}
 				
@@ -203,6 +205,8 @@ public class ChatterServer {
 			}
 			
 			removeClientFromList(this);
+			System.out.println("sending log off message");
+			sendMessageToClient(new Message(User.SERVER, clientUser, "disconnect", Message.USER_LOGOFF_MESSAGE));
 			close();
 		}
 		
@@ -215,7 +219,7 @@ public class ChatterServer {
 			try {
 				if (m.getType() == Message.TEXT_MESSAGE)
 					send.writeObject(m);
-				else if (m.getType() == Message.USER_MESSAGE){
+				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
 					if (m.getSender() != clientUser) {
 						send.writeObject(m);
 					}

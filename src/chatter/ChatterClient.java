@@ -80,7 +80,7 @@ public class ChatterClient implements Serializable {
 		new ServerListener().start();
 		
 		try {
-			Message logon = new Message(clientUser, Message.USER_MESSAGE);
+			Message logon = new Message(clientUser, Message.USER_LOGON_MESSAGE);
 			toServer.writeObject(logon);
 		} catch (IOException e) {
 			clientFrame.displayMessage(new Message("Error sending user information to server."));
@@ -153,11 +153,11 @@ public class ChatterClient implements Serializable {
 				try {
 					Message messageRecieved = (Message)(fromServer.readObject());
 					clientFrame.displayMessage(messageRecieved);
-				} catch (ClassNotFoundException | IOException e) {
-					clientFrame.displayMessage(new Message("Disconnected from server"));
+				} catch (IOException e) {
+					clientFrame.displayMessage(new Message("Server has shutdown."));
 					disconnectFromServer();
 					break;
-				} catch (ClassCastException e) {
+				} catch (ClassCastException | ClassNotFoundException e) {
 					clientFrame.displayMessage(new Message("Error: unknown object recieved from server."));
 				}
 			}

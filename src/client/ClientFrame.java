@@ -81,14 +81,16 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			// display text
 			printToCurrentTab(serverMessage);
 		}
-		else if (serverMessage.getType() == Message.USER_MESSAGE) {
-			if (serverMessage.getSender() != connectedClient.getUser()) {
-//				printToGlobal(serverMessage);
+		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
+			if (messageSender != connectedClient.getUser()) 
 				addNewUser(serverMessage.getSender());
-			}
+		}
+		else if (serverMessage.getType() == Message.USER_LOGOFF_MESSAGE) {
+			if (messageSender != connectedClient.getUser()) 
+				removeUser(serverMessage.getSender());
 		}
 	}
-	
+
 	private void goToTab(User u) {
 		int tabIndex;
 		if (null == u) 
@@ -190,6 +192,13 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		currentTextDisplay.append(message + "\n");
 		
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void removeUser(User u) {
+		listModel.removeElement(u);
+		
+		pack();
+		repaint();
 	}
 	
 	private void setRecipientFromSelectedTab() {

@@ -42,6 +42,9 @@ public class ServerFrame extends JFrame {
 		this.setBackground(Color.LIGHT_GRAY);
 		
 		setVisible(true);
+		User setDisplay = new User();
+		addNewUser(setDisplay);
+		removeUser(setDisplay);
 	}
 	
 	public void addNewUser(User newUser) {
@@ -53,13 +56,16 @@ public class ServerFrame extends JFrame {
 	
 	public void displayMessage(Message serverMessage) {
 		User messageSender = serverMessage.getSender();
-		User messageRecipient = serverMessage.getRecipient();
 
 		if (serverMessage.getType() == Message.TEXT_MESSAGE) 
-			printToGlobal(serverMessage);
-		else if (serverMessage.getType() == Message.USER_MESSAGE) {
-			addNewUser(serverMessage.getSender());
-			printToGlobal(serverMessage.getSender() + " has connected.");
+			printToGlobal(serverMessage.getMessage());
+		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
+			addNewUser(messageSender);
+			printToGlobal(messageSender + " has connected.");
+		}
+		else if (serverMessage.getType() == Message.USER_LOGOFF_MESSAGE) {
+			removeUser(messageSender);
+			printToGlobal(messageSender + " has disconnected.");
 		}
 	}
 	
@@ -145,6 +151,13 @@ public class ServerFrame extends JFrame {
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
+	private void removeUser(User u) {
+		listModel.removeElement(u);
+		
+		pack();
+		repaint();
+	}
+	
 	private void setRecipientFromSelectedTab() {
 		int currentTab = display.getSelectedIndex();
         if (currentTab == 0) {
@@ -161,18 +174,4 @@ public class ServerFrame extends JFrame {
         	}
         }
 	}
-	
-//	@Override
-//	public void actionPerformed(ActionEvent e) {
-//		if (e.getSource() == sendButton || e.getSource() == textEntry) {
-//			String text = textEntry.getText();
-//			if (text != null && !text.isEmpty()) {				
-//				connectedClient.sendMessage(text, recipient);
-//				textEntry.setText(null);
-//				
-//			}
-//		}
-//	}
-	
-	// TODO: name deselection on click
 }
