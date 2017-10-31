@@ -66,7 +66,6 @@ public class ChatterServer {
 	private void sendMessageToClient(Message m) {
 		synchronized(threadList) {
 			if (m.getRecipient() == User.SERVER) {
-				System.out.println("broadcasting logoff message");
 				// Send message to all clients
 				for (int i=0; i<threadList.size(); i++) {
 					ChatterThread clientRecipient = threadList.get(i);
@@ -80,7 +79,20 @@ public class ChatterServer {
 			}
 			else {
 				// TODO: use hashmap to send private message
-				System.out.println("Sending private message to " + m.getRecipient());
+				System.out.println("Sending private message from " + m.getSender() + " to " + m.getRecipient());
+				for (int i=0; i< threadList.size(); i++) {
+					ChatterThread clientRecipient = threadList.get(i);
+					System.out.println("User "+ i + ": " + clientRecipient.getUser());
+					User testUser = clientRecipient.getUser();
+					
+					if (testUser.equals(m.getRecipient()) || testUser.equals(m.getSender())) {
+						System.out.println("sending...");
+						if (!clientRecipient.sendMessage(m)) {
+							threadList.remove(i);
+							i--;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -196,7 +208,6 @@ public class ChatterServer {
 					serverFrame.displayMessage(new Message("Unknown object recieved from " + clientUser));
 					break;
 				} catch (IOException e) {
-//					serverFrame.displayMessage(new Message(clientUser + " has disconnected"));
 					serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGOFF_MESSAGE));
 					break;
 				}
@@ -205,9 +216,12 @@ public class ChatterServer {
 			}
 			
 			removeClientFromList(this);
-			System.out.println("sending log off message");
 			sendMessageToClient(new Message(User.SERVER, clientUser, "disconnect", Message.USER_LOGOFF_MESSAGE));
 			close();
+		}
+		
+		public User getUser() {
+			return clientUser;
 		}
 		
 		public boolean sendMessage(Message m) {

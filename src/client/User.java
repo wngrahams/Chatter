@@ -52,4 +52,17 @@ public class User implements Serializable {
 		
 		return nickname;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) 
+			return false;
+			
+		User userObj = (User)obj;
+		if (userObj.getNickname().equals(this.getNickname()) && userObj.getIP().equals(this.getIP()))
+			return true;
+		
+		else 
+			return false;
+	}
 }
