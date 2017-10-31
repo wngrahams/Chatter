@@ -17,6 +17,8 @@ import chatter.Message;
 
 public class ChatterServer {
 
+	private ServerFrame serverFrame;
+	
 	private int port = 0xFFFF;
 	private boolean keepGoing;
 
@@ -38,7 +40,9 @@ public class ChatterServer {
 	public ChatterServer(int port)
 	{
 		this.port = port;
+		serverFrame = new ServerFrame(this);
 		threadList = new ArrayList<ChatterThread>();
+		
 		startServer();
 	}
 	
@@ -87,7 +91,7 @@ public class ChatterServer {
 			ServerSocket serverSocket = new ServerSocket(port);
 			
 			while (keepGoing) {
-				System.out.println("Waiting for clients...");
+				serverFrame.displayMessage(new Message("Ready to receive clients..."));
 				
 				try {
 					Socket clientSocket = serverSocket.accept();
@@ -99,7 +103,7 @@ public class ChatterServer {
 					threadList.add(newClient);
 					newClient.start();
 				} catch (IOException e) {
-					System.out.println("Error connecting to client.");
+					serverFrame.displayMessage(new Message("Error connecting to client."));
 				} 
 			}
 			
@@ -110,10 +114,10 @@ public class ChatterServer {
 					toClose.close();
 				}
 			} catch (IOException e) {
-				System.out.println("Error closing server socket");
+				serverFrame.displayMessage(new Message("Error closing server socket."));
 			}
 		} catch (IOException e) {
-			System.out.println("Error creating server socket at port: " + port);
+			serverFrame.displayMessage(new Message("Error creating server socket at port: " + port));
 			keepGoing = false;
 		}
 		
@@ -142,12 +146,13 @@ public class ChatterServer {
 				userMessage = (Message)(recieve.readObject());
 				clientUser = userMessage.getSender();
 				
-				System.out.println(clientUser + " connected");
+//				System.out.println(clientUser + " connected");
+				serverFrame.displayMessage(new Message(clientUser, Message.USER_MESSAGE));
 			} catch (IOException e) {
-				System.out.println("Error connecting client Input/output stream");
+				serverFrame.displayMessage(new Message("Error connecting client input/output stream"));
 				return;
 			} catch (ClassNotFoundException e) {
-				System.out.println("Unknown object recieved from " + clientUser);
+				serverFrame.displayMessage(new Message("Unknown object recieved from " + clientUser));
 				return;
 			} 
 			
@@ -161,21 +166,22 @@ public class ChatterServer {
 				try {
 					send.close();
 				} catch (IOException e) {
-					System.out.println("Error disconnecting from client output stream.");
+					serverFrame.displayMessage(new Message("Error disconnecting from client output stream."));
 				}
 			}
 			if (recieve != null) {
 				try {
 					recieve.close();
 				} catch (IOException e) {
-					System.out.println("Error disconnecting from client input stream.");
+					serverFrame.displayMessage(new Message("Error disconnecting from client input stream."));
+
 				}
 			}
 			if (clientSocket != null) {
 				try {
 					clientSocket.close();
 				} catch (IOException e) {
-					System.out.println("Error disconnecting from client socket.");
+					serverFrame.displayMessage(new Message("Error disconnecting from client socket."));
 				}
 			}
 		}
@@ -186,10 +192,10 @@ public class ChatterServer {
 				try {
 					clientMessage = (Message)(recieve.readObject());
 				} catch (ClassNotFoundException e) {
-					System.out.println("Unknown object recieved from " + clientUser);
+					serverFrame.displayMessage(new Message("Unknown object recieved from " + clientUser));
 					break;
 				} catch (IOException e) {
-					System.out.println(clientUser + " has disconnected.");
+					serverFrame.displayMessage(new Message(clientUser + " has disconnected"));
 					break;
 				}
 				
@@ -215,7 +221,7 @@ public class ChatterServer {
 					}
 				}
 			} catch (IOException e) {
-				System.err.println("Error sending message to " + clientUser);
+				serverFrame.displayMessage(new Message("Error sending message to " + clientUser));
 				e.printStackTrace();
 				return false;
 			}
