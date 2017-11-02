@@ -192,13 +192,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		usersPanel.setBorder(title);
 	}
 	
-	private void printToCurrentTab(Message message) {
-		JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
-		currentTextDisplay.append(message + "\n");
-		
-		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
-	}
-	
 	private void printToTab(User u, Message m) {
 		int tabIndex;
 		if (null == u) {
