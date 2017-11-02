@@ -72,16 +72,21 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			System.out.print("To: " + serverMessage.getRecipient() + ", from: " + serverMessage.getSender());
 			System.out.println(", text: " + serverMessage.getMessage());
 			if (messageSender != null) {
-				if (connectedClient.getUser().equals(messageSender)) {
+				if (messageRecipient == null) {
+					System.out.println("0");
+					printToGlobal(serverMessage);
+				}
+				else if (connectedClient.getUser().equals(messageSender)) {
+					System.out.println("1");
 					goToTab(messageRecipient);
+					printToCurrentTab(serverMessage);
 				}
 				else if (connectedClient.getUser().equals(messageRecipient)) {
+					System.out.println("2");
 					goToTab(messageSender);
+					printToCurrentTab(serverMessage);
 				}
 			}
-	
-			// display text
-			printToCurrentTab(serverMessage);
 		}
 		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
 			if (messageSender != connectedClient.getUser()) 
@@ -111,6 +116,7 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		    
 			display.addTab(u.getNickname(), null, new JScrollPane(textArea), tooltip);
 			textDisplays.add(textArea);
+			display.setSelectedIndex(textDisplays.size() - 1);
 		}
 	}
 	
@@ -190,6 +196,7 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	}
 	
 	private void printToGlobal(Message message) {
+//		goToTab(User.SERVER);
 		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
 		

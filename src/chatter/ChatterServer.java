@@ -103,9 +103,9 @@ public class ChatterServer {
 		try {
 			ServerSocket serverSocket = new ServerSocket(port);
 			serverFrame.displayMessage(new Message("Successfully started server. IP: " + serverSocket.getInetAddress() + " Port: " + port));
+			serverFrame.displayMessage(new Message("Ready to receive clients..."));
 			
 			while (keepGoing) {
-				serverFrame.displayMessage(new Message("Ready to receive clients..."));
 				
 				try {
 					Socket clientSocket = serverSocket.accept();
