@@ -132,7 +132,9 @@ public class ChatterClient implements Serializable {
 			} catch (IOException e) {
 				Message errorMessage = new Message("Error sending message to " + messageToSend.getRecipient());
 				clientFrame.displayMessage(errorMessage);
-			} 
+			} catch (NullPointerException e) {
+				clientFrame.displayMessage(new Message("Not connected to any server."));
+			}
 		}
 	}
 	
