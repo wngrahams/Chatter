@@ -78,15 +78,19 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 				}
 				else if (connectedClient.getUser().equals(messageSender)) {
 					System.out.println("1");
-					goToTab(messageRecipient);
-					printToCurrentTab(serverMessage);
+//					goToTab(messageRecipient);
+//					printToCurrentTab(serverMessage);
+					printToTab(messageRecipient, serverMessage);
 				}
 				else if (connectedClient.getUser().equals(messageRecipient)) {
 					System.out.println("2");
-					goToTab(messageSender);
-					printToCurrentTab(serverMessage);
+//					goToTab(messageSender);
+//					printToCurrentTab(serverMessage);
+					printToTab(messageSender, serverMessage);
 				}
 			}
+			else
+				printToGlobal(serverMessage);
 		}
 		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
 			if (messageSender != connectedClient.getUser()) 
@@ -192,6 +196,35 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
 		currentTextDisplay.append(message + "\n");
 		
+		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void printToTab(User u, Message m) {
+		int tabIndex;
+		if (null == u) {
+			printToGlobal(m);
+			return;
+		}
+		else 
+			tabIndex = display.indexOfTab(u.getNickname());
+		
+		JTextArea currentTextDisplay;
+		
+		if (tabIndex != -1)
+			currentTextDisplay = textDisplays.get(tabIndex);
+		else {
+			JTextArea textArea = new JTextArea();
+		    textArea.setEditable(false);
+		    
+		    String tooltip = "Private message with " + u.getNickname();
+		    
+			display.addTab(u.getNickname(), null, new JScrollPane(textArea), tooltip);
+			textDisplays.add(textArea);
+			
+			currentTextDisplay = textDisplays.get(textDisplays.size() - 1);
+		}
+		
+		currentTextDisplay.append(m + "\n");
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
