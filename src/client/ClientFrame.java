@@ -94,14 +94,16 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			User thisUser = connectedClient.getUser();
 			User oldUser = message.getSender();
 			if (oldUser.equals(thisUser)) {
-				thisUser.setNickname(message.getMessage());
+//				thisUser.setNickname(message.getMessage());
+				connectedClient.setUser(new User(message.getMessage(), thisUser.getIP()));
 				this.setTitle(TITLE + connectedClient.getUser());
 			} 
-			else {
-				removeUser(oldUser);
-				addNewUser(new User(message.getMessage(), oldUser.getIP()));
-			}
+//			else {
+//				
+//			}
 			
+			removeUser(oldUser);
+			addNewUser(new User(message.getMessage(), oldUser.getIP()));
 			pack();
 			repaint();
 			

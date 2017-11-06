@@ -246,7 +246,7 @@ public class ChatterServer {
 						String oldUser = clientUser.getNickname();
 						clientUser.setNickname(m.getMessage()); 
 						serverFrame.displayMessage(new Message("User '" + oldUser + "' changed name to: '" + clientUser + "'"));
-						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
+//						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
 						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
 					}
 				}	

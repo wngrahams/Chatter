@@ -137,6 +137,10 @@ public class ChatterClient implements Serializable {
 		messageThread.start();
 	}
 	
+	public void setUser(User u) {
+		clientUser = u;
+	}
+	
 	private class messageSender implements Runnable {
 		
 		private Message messageToSend;
