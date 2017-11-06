@@ -28,8 +28,6 @@ import javax.swing.event.ListSelectionListener;
 import chatter.ChatterClient;
 import chatter.Message;
 
-// RPC doesn't require socket connection
-
 @SuppressWarnings("serial")
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
 	
@@ -47,6 +45,8 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	
 	private User recipient;
 	
+	private static final String TITLE = "Chatter Client - ";
+	
 	public ClientFrame(ChatterClient cc) {
 		super();
 		connectedClient = cc;
@@ -63,42 +63,50 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		repaint();
 	}
 	
-	public void displayMessage(Message serverMessage) {
-		User messageSender = serverMessage.getSender();
-		User messageRecipient = serverMessage.getRecipient();
+	public void displayMessage(Message message) {
+		User messageSender = message.getSender();
+		User messageRecipient = message.getRecipient();
 
-		if (serverMessage.getType() == Message.TEXT_MESSAGE) {
+		if (message.getType() == Message.TEXT_MESSAGE) {
 			// navigate to correct tab or create new tab
-			System.out.print("To: " + serverMessage.getRecipient() + ", from: " + serverMessage.getSender());
-			System.out.println(", text: " + serverMessage.getMessage());
-			if (messageSender != null) {
-				if (messageRecipient == null) {
-					System.out.println("0");
-					printToGlobal(serverMessage);
-				}
-				else if (connectedClient.getUser().equals(messageSender)) {
-					System.out.println("1");
-//					goToTab(messageRecipient);
-//					printToCurrentTab(serverMessage);
-					printToTab(messageRecipient, serverMessage);
-				}
-				else if (connectedClient.getUser().equals(messageRecipient)) {
-					System.out.println("2");
-//					goToTab(messageSender);
-//					printToCurrentTab(serverMessage);
-					printToTab(messageSender, serverMessage);
-				}
+			System.out.print("To: " + message.getRecipient() + ", from: " + message.getSender());
+			System.out.println(", text: " + message.getMessage());
+			if (messageSender != User.SERVER) {
+				if (messageRecipient == User.SERVER)
+					printToGlobal(message);
+				else if (connectedClient.getUser().equals(messageSender))
+					printToTab(messageRecipient, message);
+				else if (connectedClient.getUser().equals(messageRecipient)) 
+					printToTab(messageSender, message);
 			}
 			else
-				printToGlobal(serverMessage);
+				printToGlobal(message);
 		}
-		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
+		else if (message.getType() == Message.USER_LOGON_MESSAGE) {
 			if (messageSender != connectedClient.getUser()) 
-				addNewUser(serverMessage.getSender());
+				addNewUser(message.getSender());
 		}
-		else if (serverMessage.getType() == Message.USER_LOGOFF_MESSAGE) {
+		else if (message.getType() == Message.USER_LOGOFF_MESSAGE) {
 			if (messageSender != connectedClient.getUser()) 
-				removeUser(serverMessage.getSender());
+				removeUser(message.getSender());
+		}
+		else if (message.getType() == Message.USER_NAME_MESSAGE) { 
+			User thisUser = connectedClient.getUser();
+			User oldUser = message.getSender();
+			if (oldUser.equals(thisUser)) {
+				thisUser.setNickname(message.getMessage());
+				this.setTitle(TITLE + connectedClient.getUser());
+			} 
+			else {
+				removeUser(oldUser);
+				addNewUser(new User(message.getMessage(), oldUser.getIP()));
+			}
+			
+			pack();
+			repaint();
+			
+//			removeUser(oldUser);
+//			addNewUser(newUser);
 		}
 	}
 
@@ -125,10 +133,9 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	}
 	
 	private void initializePanels() {
-		setTitle("Chatter Client");
+		setTitle(TITLE + connectedClient.getUser());
 		setSize(700, 550);
 		
-		// TODO: Change this so that client is disconnected from server when this is clicked
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 	    setLayout(new BorderLayout());
@@ -260,7 +267,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			if (text != null && !text.isEmpty()) {				
 				connectedClient.sendMessage(text, recipient);
 				textEntry.setText(null);
-				
 			}
 		}
 	}

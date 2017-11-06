@@ -16,9 +16,10 @@ public class Message implements Serializable {
 	
 	private int messageType;
 	
-	public static final int TEXT_MESSAGE = 0b00;
-	public static final int USER_LOGON_MESSAGE = 0b01;
-	public static final int USER_LOGOFF_MESSAGE = 0b10;
+	public static final int USER_NAME_MESSAGE = 0b00;
+	public static final int TEXT_MESSAGE = 0b01;
+	public static final int USER_LOGON_MESSAGE = 0b10;
+	public static final int USER_LOGOFF_MESSAGE = 0b11;
 	
 	public Message() {
 		this("");
@@ -38,10 +39,10 @@ public class Message implements Serializable {
 	
 	public Message(User to, User from, String text, int messageType){
 		if (USER_LOGON_MESSAGE == messageType) {
-			setMessage(from + " logged on.");
+			setMessage("'" + from + "' logged on.");
 		}
 		else if (USER_LOGOFF_MESSAGE == messageType)
-			setMessage(from + " disconnected.");
+			setMessage("'" + from + "' disconnected.");
 		else
 			setMessage(text);
 		
@@ -82,7 +83,8 @@ public class Message implements Serializable {
 	}
 	
 	public void setType(int type) {
-		if (type != TEXT_MESSAGE && type != USER_LOGON_MESSAGE && type != USER_LOGOFF_MESSAGE) 
+		if (type != TEXT_MESSAGE && type != USER_LOGON_MESSAGE 
+				&& type != USER_LOGOFF_MESSAGE && type != USER_NAME_MESSAGE) 
 			throw new RuntimeException("Unknown error type");
 		
 		messageType = type;

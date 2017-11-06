@@ -43,8 +43,8 @@ public class ChatterClient implements Serializable {
 	}
 	
 	public ChatterClient(String ip, int port) {
-		clientFrame = new ClientFrame(this);
 		clientUser = new User();
+		clientFrame = new ClientFrame(this);
 		clientFrame.addNewUser(getUser());
 	   
 		serverIP = ip;
@@ -117,6 +117,25 @@ public class ChatterClient implements Serializable {
 		return clientUser;
 	}
 	
+	public void sendMessage(String text, User recipient) {
+		String[] splitString = text.split(" ", 2);
+		Message messageToSend;
+		
+		if (splitString[0].equalsIgnoreCase("/nick")) {
+			if (splitString.length > 1)
+				messageToSend = new Message(User.SERVER, clientUser, splitString[1], Message.USER_NAME_MESSAGE);
+			else {
+				clientFrame.displayMessage(new Message("No nickname specified."));
+				return;
+			}
+		}
+		else 
+			messageToSend = new Message(recipient, clientUser, text);
+		
+		Thread messageThread = new Thread(new messageSender(messageToSend));
+		messageThread.start();
+	}
+	
 	private class messageSender implements Runnable {
 		
 		private Message messageToSend;
@@ -138,16 +157,10 @@ public class ChatterClient implements Serializable {
 		}
 	}
 	
-	public void sendMessage(String text, User recipient) {
-		Message messageToSend = new Message(recipient, clientUser, text);
-		Thread messageThread = new Thread(new messageSender(messageToSend));
-		messageThread.start();
-	}
-	
 	/**
 	 * Thread class to constantly listen to the server
 	 */
-	public class ServerListener extends Thread {
+	private class ServerListener extends Thread {
 		
 		@Override
 		public void run() {

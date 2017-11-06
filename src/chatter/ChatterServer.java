@@ -205,13 +205,13 @@ public class ChatterServer {
 				try {
 					clientMessage = (Message)(recieve.readObject());
 				} catch (ClassNotFoundException e) {
-					serverFrame.displayMessage(new Message("Unknown object recieved from " + clientUser));
+					serverFrame.displayMessage(new Message("Unknown object recieved from '" + clientUser + "'"));
 					break;
 				} catch (IOException e) {
 					serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGOFF_MESSAGE));
 					break;
 				}
-				
+
 				sendMessageToClient(clientMessage);
 			}
 			
@@ -231,13 +231,26 @@ public class ChatterServer {
 			}
 			
 			try {
-				if (m.getType() == Message.TEXT_MESSAGE)
+				if (m.getType() == Message.TEXT_MESSAGE) {
 					send.writeObject(m);
-				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
-					if (m.getSender() != clientUser) {
-						send.writeObject(m);
-					}
 				}
+				else if (m.getType() == Message.USER_NAME_MESSAGE) {
+					send.writeObject(m);
+					
+					// change name only for user that sent this name change request
+					if (clientUser.equals(m.getSender())) {
+						String oldUser = clientUser.getNickname();
+						clientUser.setNickname(m.getMessage()); 
+						serverFrame.displayMessage(new Message("User '" + oldUser + "' changed name to: '" + clientUser + "'"));
+						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
+					}
+				}	
+				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
+					if (m.getSender() != clientUser)
+						send.writeObject(m);
+				}
+				
+//				send.reset();
 			} catch (IOException e) {
 				serverFrame.displayMessage(new Message("Error sending message to " + clientUser));
 				e.printStackTrace();
