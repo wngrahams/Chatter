@@ -81,7 +81,8 @@ public class ChatterClient implements Serializable {
 		
 		try {
 			Message logon = new Message(clientUser, Message.USER_LOGON_MESSAGE);
-			toServer.writeObject(logon);
+//			toServer.writeObject(logon);
+			toServer.writeUnshared(logon);
 		} catch (IOException e) {
 			clientFrame.displayMessage(new Message("Error sending user information to server."));
 			return false;
@@ -147,7 +148,8 @@ public class ChatterClient implements Serializable {
 		@Override
 		public void run() {
 			try {	
-				toServer.writeObject(messageToSend);
+//				toServer.writeObject(messageToSend);
+				toServer.writeUnshared(messageToSend);
 			} catch (IOException e) {
 				Message errorMessage = new Message("Error sending message to " + messageToSend.getRecipient());
 				clientFrame.displayMessage(errorMessage);
@@ -166,7 +168,8 @@ public class ChatterClient implements Serializable {
 		public void run() {
 			while (true) {
 				try {
-					Message messageRecieved = (Message)(fromServer.readObject());
+//					Message messageRecieved = (Message)(fromServer.readObject());
+					Message messageRecieved = (Message)(fromServer.readUnshared());
 					clientFrame.displayMessage(messageRecieved);
 				} catch (IOException e) {
 					clientFrame.displayMessage(new Message("Server has shutdown."));

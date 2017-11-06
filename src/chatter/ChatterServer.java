@@ -157,7 +157,8 @@ public class ChatterServer {
 				send = new ObjectOutputStream(clientSocket.getOutputStream());
 				recieve = new ObjectInputStream(clientSocket.getInputStream());
 								
-				userMessage = (Message)(recieve.readObject());
+//				userMessage = (Message)(recieve.readObject());
+				userMessage = (Message)(recieve.readUnshared());
 				clientUser = userMessage.getSender();
 				
 				serverFrame.displayMessage(new Message(clientUser, Message.USER_LOGON_MESSAGE));
@@ -203,7 +204,8 @@ public class ChatterServer {
 			boolean clientRun = true;
 			while (clientRun) {
 				try {
-					clientMessage = (Message)(recieve.readObject());
+//					clientMessage = (Message)(recieve.readObject());
+					clientMessage = (Message)(recieve.readUnshared());
 				} catch (ClassNotFoundException e) {
 					serverFrame.displayMessage(new Message("Unknown object recieved from '" + clientUser + "'"));
 					break;
@@ -232,10 +234,12 @@ public class ChatterServer {
 			
 			try {
 				if (m.getType() == Message.TEXT_MESSAGE) {
-					send.writeObject(m);
+//					send.writeObject(m);
+					send.writeUnshared(m);
 				}
 				else if (m.getType() == Message.USER_NAME_MESSAGE) {
-					send.writeObject(m);
+//					send.writeObject(m);
+					send.writeUnshared(m);
 					
 					// change name only for user that sent this name change request
 					if (clientUser.equals(m.getSender())) {
@@ -243,11 +247,14 @@ public class ChatterServer {
 						clientUser.setNickname(m.getMessage()); 
 						serverFrame.displayMessage(new Message("User '" + oldUser + "' changed name to: '" + clientUser + "'"));
 						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
+						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
 					}
 				}	
 				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
-					if (m.getSender() != clientUser)
-						send.writeObject(m);
+					if (m.getSender() != clientUser) {
+//						send.writeObject(m);
+						send.writeUnshared(m);
+					}
 				}
 				
 //				send.reset();
