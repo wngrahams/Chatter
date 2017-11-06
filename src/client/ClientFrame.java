@@ -257,6 +257,8 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
         			break;
         		}
         	}
+        	
+        	recipient = new User(recipientName);
         }
 	}
 	
