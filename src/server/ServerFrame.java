@@ -56,6 +56,7 @@ public class ServerFrame extends JFrame {
 	
 	public void displayMessage(Message serverMessage) {
 		User messageSender = serverMessage.getSender();
+		User messageRecipient = serverMessage.getRecipient();
 
 		if (serverMessage.getType() == Message.TEXT_MESSAGE) 
 			printToGlobal(serverMessage.getMessage());
@@ -66,6 +67,11 @@ public class ServerFrame extends JFrame {
 		else if (serverMessage.getType() == Message.USER_LOGOFF_MESSAGE) {
 			removeUser(messageSender);
 			printToGlobal(messageSender + " has disconnected.");
+		}
+		else if (serverMessage.getType() == Message.USER_NAME_MESSAGE) {
+			removeUser(messageSender);
+			addNewUser(messageRecipient);
+			printToGlobal("User '" + messageSender + "' changed name to: '" + messageRecipient + "'");
 		}
 	}
 	

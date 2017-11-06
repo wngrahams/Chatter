@@ -61,6 +61,8 @@ public class ChatterServer {
 		synchronized(threadList) {
 			threadList.remove(this);
 		}
+		
+		
 	}
 	
 	private void sendMessageToClient(Message m) {
@@ -243,11 +245,14 @@ public class ChatterServer {
 					
 					// change name only for user that sent this name change request
 					if (clientUser.equals(m.getSender())) {
-						String oldUser = clientUser.getNickname();
-						clientUser.setNickname(m.getMessage()); 
-						serverFrame.displayMessage(new Message("User '" + oldUser + "' changed name to: '" + clientUser + "'"));
+						String oldUserName = clientUser.getNickname();
+						User oldUser = new User(clientUser);
+//						clientUser.setNickname(m.getMessage()); 
+						clientUser = new User(m.getMessage(), clientUser.getIP());
+						serverFrame.displayMessage(new Message(clientUser, oldUser, clientUser.getNickname(), Message.USER_NAME_MESSAGE));
+//						serverFrame.displayMessage(new Message("User '" + oldUserName + "' changed name to: '" + clientUser + "'"));
 //						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
-						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
+						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from '" + oldUser + "' to '" + clientUser + "'"));
 					}
 				}	
 				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
