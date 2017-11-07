@@ -16,7 +16,7 @@ public class ChatterClient implements Serializable {
 	
 	/**
 	 * ChatterClient class consolidates the socket, ClientFrame, output stream, and input stream 
-	 * for a new User that joins the server. 
+	 * for a new <code>User</code> that joins the server. 
 	 */
 	private static final long serialVersionUID = 836093546191030129L;
 	private transient ClientFrame clientFrame;
@@ -50,7 +50,7 @@ public class ChatterClient implements Serializable {
 	}
 	
 	/**
-	 * ChatterClient constructor with perameters for receiving IP address and port number 
+	 * ChatterClient constructor with parameters for receiving IP address and port number 
 	 * of the host server. Creates a new <code>User</code> object and <code>ClientFrame</code> 
 	 * object to be associated with this client. 
 	 */
@@ -68,7 +68,11 @@ public class ChatterClient implements Serializable {
 
 	/**
 	 * Runs in constructor, connects client to <code>ChatterServer</code>.
-	 * Generates a connection message <code>Message</code> and displays it to <code>ClientFrame</code>.
+	 * Generates a text connection message <code>Message</code> and displays it to <code>ClientFrame</code>.
+	 * Receives input and output streams from the socket. Starts a new thread <code>ServerListener</code>
+	 * that will "listen to" and facilitate communication between this client and the <code>ChatterServer</code>.
+	 * Finally, generates a <code>Message</code> with its associated type declared as log-on. This "log-on"
+	 * message is written to the server via the client's output stream.
 	 */
 	private boolean connectToServer() {
 		try {
@@ -140,7 +144,10 @@ public class ChatterClient implements Serializable {
 	/**
 	 * Method for sending a <code>Message</code> from client to <code>ChatterServer</code>.
 	 * Includes parameters for the text and recipient <code>User</code> the message is addressed to.
-	 * Generates a new <code>Message</code> 
+	 * Parses the "text" portion of the <code>Message</code> intended to be sent to the< code>ChatterServer</code>
+	 * and updates the <code>Message</code> if the User is attempting to update their nickname 
+	 * rather than send a text message.The method then generates a messageSender class passing it the Message
+	 * object, and passes this instance of sendMessage class to the ServerListener Thread.
 	 */
 	public void sendMessage(String text, User recipient) {
 		String[] splitString = text.split(" ", 2);
@@ -165,14 +172,26 @@ public class ChatterClient implements Serializable {
 		clientUser = u;
 	}
 	
+	/**
+	 * Nested Thread class which implements Runnable, and overrides run(). 
+	 */
 	private class messageSender implements Runnable {
 		
 		private Message messageToSend;
 		
+		/**
+		 * Constructor, updates the member <code>Message</code> with the Message object that was passed
+		 * to the thread.
+		 */
 		public messageSender(Message message) {
 			messageToSend = message;
 		}
 		
+		/**
+		 * Overrode run method. Runs from when the initial Thread in sendMessage() is started and ends
+		 * when <code>ClientFrame</code> is closed. Writes the <code>Message</code> that was passed
+		 * to the thread to the client's output stream.
+		 */
 		@Override
 		public void run() {
 			try {	
@@ -187,7 +206,8 @@ public class ChatterClient implements Serializable {
 	}
 	
 	/**
-	 * Thread class to constantly listen to the server
+	 * Thread class to constantly listen to the server. Reads messages from <code>ChatterServer</code>
+	 * via client input stream and displays them to <code>ClientFrame</code>.
 	 */
 	private class ServerListener extends Thread {
 		
