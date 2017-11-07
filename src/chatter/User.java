@@ -5,7 +5,8 @@ import java.io.Serializable;
 public class User implements Serializable {
 	
 	/**
-	 * 
+	 * User class used to consolidate a client's name/nickname and IP Address into one object.
+	 *  A new User object is created when the ChatterClient class is run. 
 	 */
 	private static final long serialVersionUID = 8774797718179737042L;
 	private String nickname;
@@ -28,6 +29,9 @@ public class User implements Serializable {
 		ipAddress = ip;
 	}
 	
+	/**
+	 * Used to overwrite an existing User object. 
+	 */
 	public User(User otherUser) {
 		setNickname(otherUser.getNickname());
 		ipAddress = otherUser.getIP();
@@ -45,6 +49,9 @@ public class User implements Serializable {
 		nickname = name;
 	}
 	
+	/**
+	 * Returns User object as a string.
+	 */
 	@Override
 	public String toString() {
 		if (nickname == null)
@@ -53,6 +60,9 @@ public class User implements Serializable {
 		return nickname;
 	}
 	
+	/**
+	 * Method for comparing User objects. Used to identify if Users have the same name/nickname. 
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) 

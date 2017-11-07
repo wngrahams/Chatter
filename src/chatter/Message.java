@@ -5,7 +5,10 @@ import java.io.Serializable;
 public class Message implements Serializable {
 
 	/**
-	 *  
+	 *  Message class consolidates messages passed between clients and server into one class.
+	 *  Contains a String that stores the text message, two <code>User</code> objects for storing
+	 *   the sender and recipient <code>User</code>. ALso contains integers denoting the "type" of message. 
+	 *   Message objects are either log-on, log-off, text message, or update name message.
 	 */
 	private static final long serialVersionUID = 4419539405020821670L;
 	private String message;
@@ -30,11 +33,24 @@ public class Message implements Serializable {
 	public Message(User from, int messageType) {
 		this(User.SERVER, from, "", messageType);
 	}
+	
 
+	/**
+	 * Message constructor with parameters. Receives two <code>User</code> objects, the message sender 
+	 * and message recipient, the type of message, and the text of the message. Recipient will be null
+	 *  if it is a log on/off message or if it is a global message.
+	 */
 	public Message(User to, User from, String text) {
 		this(to, from, text, TEXT_MESSAGE);
 	}
 	
+	/**
+	 * Message constructor with parameters. Receives two <code>User</code> objects, the message sender 
+	 * and message recipient, the type of message, and the text of the message. Recipient will be null 
+	 * if it is a log on/off message or if it is a global message. Also includes a parameter for 
+	 * message "type," indicating whether the message sent to the server is a user logging on/off, a text
+	 * message, or a name change message.
+	 */
 	public Message(User to, User from, String text, int messageType){
 		if (USER_LOGON_MESSAGE == messageType) {
 			setMessage("'" + from + "' logged on.");
@@ -52,7 +68,11 @@ public class Message implements Serializable {
 	public String getMessage() {
 		return message;
 	}
-
+	
+	
+	/**
+	 * Update the text message, if "type" of message is a text message. 
+	 */
 	public void setMessage(String message) {
 		this.message = message;
 	}
@@ -80,6 +100,10 @@ public class Message implements Serializable {
 		return messageType;
 	}
 	
+	/**
+	 * Update message "type" to indicate whether the incoming message to the server
+	 * is a log-on message, a text message, an updated user name, or a log-off message.
+	 */
 	public void setType(int type) {
 		if (type != TEXT_MESSAGE && type != USER_LOGON_MESSAGE 
 				&& type != USER_LOGOFF_MESSAGE && type != USER_NAME_MESSAGE) 
@@ -88,6 +112,9 @@ public class Message implements Serializable {
 		messageType = type;
 	}
 
+	/**
+	 * Returns the "Message" object as a string
+	 */
 	@Override
 	public String toString() {
 		String output;

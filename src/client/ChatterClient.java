@@ -7,13 +7,16 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.sun.corba.se.impl.oa.toa.TOA;
+
 import chatter.Message;
 import chatter.User;
 
 public class ChatterClient implements Serializable {
 	
 	/**
-	 * 
+	 * ChatterClient class consolidates the socket, ClientFrame, output stream, and input stream 
+	 * for a new User that joins the server. 
 	 */
 	private static final long serialVersionUID = 836093546191030129L;
 	private transient ClientFrame clientFrame;
@@ -26,6 +29,7 @@ public class ChatterClient implements Serializable {
 	private transient ObjectOutputStream toServer;
 	private transient ObjectInputStream fromServer;
 
+	
 	public static void main(String[] args) {
 		ChatterClient cc;
 		if (args.length < 1)
@@ -38,10 +42,18 @@ public class ChatterClient implements Serializable {
 		this("localhost", 0xFFFF);
 	}
 	
+	/**
+	 * ChatterClient constructor connecting to "localhost" server with port number "port".
+	 */
 	public ChatterClient(int port) {
 		this("localhost", port);
 	}
 	
+	/**
+	 * ChatterClient constructor with perameters for receiving IP address and port number 
+	 * of the host server. Creates a new <code>User</code> object and <code>ClientFrame</code> 
+	 * object to be associated with this client. 
+	 */
 	public ChatterClient(String ip, int port) {
 		clientUser = new User();
 		clientFrame = new ClientFrame(this);
@@ -54,6 +66,10 @@ public class ChatterClient implements Serializable {
 			disconnectFromServer();
 	}
 
+	/**
+	 * Runs in constructor, connects client to <code>ChatterServer</code>.
+	 * Generates a connection message <code>Message</code> and displays it to <code>ClientFrame</code>.
+	 */
 	private boolean connectToServer() {
 		try {
 			clientFrame.displayMessage(new Message("Connecting to server: " + serverIP + " " + serverPort));
@@ -91,6 +107,10 @@ public class ChatterClient implements Serializable {
 		return true;
 	}
 	
+	/**
+	 * Method for disconnecting from <code>ChatterServer</code>. Called when <code>ClientFrame</code> is closed.
+	 * Generates a disconnection message <code>Message</code> and displays it to <code>ClientFrame</code>.
+	 */
 	public void disconnectFromServer() {
 		// disconnect from the server:
 		try {
@@ -117,6 +137,11 @@ public class ChatterClient implements Serializable {
 		return clientUser;
 	}
 	
+	/**
+	 * Method for sending a <code>Message</code> from client to <code>ChatterServer</code>.
+	 * Includes parameters for the text and recipient <code>User</code> the message is addressed to.
+	 * Generates a new <code>Message</code> 
+	 */
 	public void sendMessage(String text, User recipient) {
 		String[] splitString = text.split(" ", 2);
 		Message messageToSend;
