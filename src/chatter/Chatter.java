@@ -1,6 +1,5 @@
 package chatter;
 
-import client.ChatterClient;
 import server.ChatterServer;
 
 
