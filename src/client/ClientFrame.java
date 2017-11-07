@@ -28,6 +28,15 @@ import javax.swing.event.ListSelectionListener;
 import chatter.Message;
 import chatter.User;
 
+/** 
+ * The <code>ClientFrame</code> class extends <code>JFrame</code>;
+ * it allows the user to interact with the client by typing and sending 
+ * messages, viewing messages already sent, and viewing a list of 
+ * connected users.
+ * 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 @SuppressWarnings("serial")
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
 	
@@ -47,6 +56,15 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	
 	private static final String TITLE = "Chatter Client - ";
 	
+	/** 
+	 * Creates a new <code>ClientFrame</code> with a given
+	 * associated <code>ChatterClient</code> that will send 
+	 * and receive messages to other clients via the <code>ChatterServer</code>.
+	 * Calls the parent super constructor and initializes the panels 
+	 * used in the interface.
+	 * 
+	 * @param cc The associated <code>ChatterClient</code>
+	 */
 	public ClientFrame(ChatterClient cc) {
 		super();
 		connectedClient = cc;
@@ -56,6 +74,12 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		setVisible(true);
 	}
 	
+	/** 
+	 * Adds a new <code>User</code> to the <code>JList</code> of 
+	 * connected users.
+	 * 
+	 * @param newUser The <code>User</code> to add
+	 */
 	public void addNewUser(User newUser) {
 	    listModel.addElement(newUser);
 
@@ -63,14 +87,19 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		repaint();
 	}
 	
+	/** 
+	 * Displays a <code>Message</code> to the client text display. The 
+	 * way the text is displayed and the resulting behavior of the frame
+	 * depends on the type of the <code>Message</code>
+	 * 
+	 * @param message The <code>Message</code> to display
+	 */
 	public void displayMessage(Message message) {
 		User messageSender = message.getSender();
 		User messageRecipient = message.getRecipient();
 
 		if (message.getType() == Message.TEXT_MESSAGE) {
 			// navigate to correct tab or create new tab
-			System.out.print("To: " + message.getRecipient() + ", from: " + message.getSender());
-			System.out.println(", text: " + message.getMessage());
 			if (messageSender != User.SERVER) {
 				if (messageRecipient == User.SERVER)
 					printToGlobal(message);
@@ -105,6 +134,13 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		}
 	}
 
+	/** 
+	 * Called when a user in the <code>JList</code> is selected, navigates
+	 * to the correct tab based on which user was selected. Creates a new
+	 * tab if no tab is found for the selected user.
+	 * 
+	 * @param u The desired <code>User</code> to be found. 
+	 */
 	private void goToTab(User u) {
 		int tabIndex;
 		if (null == u) 
@@ -127,6 +163,10 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		}
 	}
 	
+	/** 
+	 * Sets up the positioning and size of the various <code>JPanel</code>s
+	 * and their contained <code>JComponent</code>s.
+	 */
 	private void initializePanels() {
 		setTitle(TITLE + connectedClient.getUser());
 		setSize(700, 550);
@@ -185,6 +225,11 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	    add(usersPanel, BorderLayout.WEST);
 	}
 	
+	/** 
+	 * Called by <code>initializePanels()</code>, this method sets up the 
+	 * panel on the left side of the frame that will display the <code>JList</code>
+	 * of connected users.
+	 */
 	private void initializeUsersPanel() {
 		usersPanel.setPreferredSize(new Dimension(120, 400));
 		
@@ -194,6 +239,13 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		usersPanel.setBorder(title);
 	}
 	
+	/** 
+	 * Given a desired<code>User</code>, this method prints a <code>Message</code>
+	 * to that user's corresponding tab
+	 * 
+	 * @param u The associated <code>User</code>
+	 * @param m The <code>Message</code> to display
+	 */
 	private void printToTab(User u, Message m) {
 		int tabIndex;
 		if (null == u) {
@@ -223,6 +275,12 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
+	/** 
+	 * Prints the given message to the tab that corresponds with global
+	 * messages.
+	 * 
+	 * @param message The <code>Message</code> to display
+	 */
 	private void printToGlobal(Message message) {
 		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
@@ -230,6 +288,11 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
+	/** 
+	 * Removes a given user from the <code>JList</code> of <code>User</code>s
+	 * 
+	 * @param u The <code>User</code> to remove
+	 */
 	private void removeUser(User u) {
 		listModel.removeElement(u);
 		
@@ -237,6 +300,10 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		repaint();
 	}
 	
+	/** 
+	 * Determines the recipient of the next message sent by the user
+	 * based on the tab that is currently open
+	 */
 	private void setRecipientFromSelectedTab() {
 		int currentTab = display.getSelectedIndex();
         if (currentTab == 0) {
@@ -255,6 +322,12 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
         }
 	}
 	
+	/** 
+	 * Invoked when the enter key or the 'send' button is pressed,
+	 * sends a message to a recipient as determined by <code>setRecipientFromSelectedTab()</code> 
+	 * 
+	 * @param e <code>ActionEvent</code>
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == sendButton || e.getSource() == textEntry) {
@@ -266,6 +339,12 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		}
 	}
 
+	/** 
+	 * Invoked when a user is selected by mouse from the <code>JList</code> of
+	 * connected users, calls the <code>goToTab()</code> method
+	 * 
+	 * @param e <code>ListSelectionEvent</code>
+	 */
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		goToTab(userList.getSelectedValue());
