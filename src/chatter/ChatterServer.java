@@ -46,6 +46,19 @@ public class ChatterServer {
 		startServer();
 	}
 	
+	private boolean checkNameAvailable(String name) {
+		synchronized (threadList) {
+			for (int i=0; i<threadList.size(); i++) {
+				User currentUser = threadList.get(i).getUser();
+				String userName = currentUser.getNickname();
+				if (name.equals(userName))
+					return false;
+			}
+			
+			return true;
+		}
+	}
+	
 	private void getAllUsers(ChatterThread reciever) {
 		synchronized(threadList) {
 			for (int i=0; i<threadList.size(); i++) {
@@ -216,7 +229,14 @@ public class ChatterServer {
 					break;
 				}
 
-				sendMessageToClient(clientMessage);
+				// first check if it's a name change, if the new name is available
+				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage())) {
+//					if(!checkNameAvailable(clientMessage.getMessage())) {
+						sendMessageToClient(new Message(clientUser, User.SERVER, "Name '" + clientMessage.getMessage() + "' is not available."));
+//					}
+				}
+				else
+					sendMessageToClient(clientMessage);
 			}
 			
 			removeClientFromList(this);
