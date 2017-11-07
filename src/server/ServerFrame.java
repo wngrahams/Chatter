@@ -1,26 +1,20 @@
 package server;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import com.sun.corba.se.spi.activation.Server;
-
 import chatter.Message;
 import chatter.User;
-import client.ChatterClient;
 
+/** 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
+@SuppressWarnings("serial")
 public class ServerFrame extends JFrame {
-
-	private ChatterServer connectedServer;
 	
 	private JTabbedPane display;
 	private JScrollPane usersPanel;
@@ -30,11 +24,12 @@ public class ServerFrame extends JFrame {
 	private JList<User> userList;
 	private DefaultListModel<User> listModel;
 	
-	private User recipient;
-	
-	public ServerFrame(ChatterServer cs) {
+	/** 
+	 * Constructs a new frame calling the JFrame super constructor. 
+	 * Panels specific to this class are then initialized.
+	 */
+	public ServerFrame() {
 		super();
-		connectedServer = cs;
 		initializePanels();
 		this.setBackground(Color.LIGHT_GRAY);
 		
@@ -43,7 +38,13 @@ public class ServerFrame extends JFrame {
 		addNewUser(setDisplay);
 		removeUser(setDisplay);
 	}
-	
+
+	/** 
+	 * Adds a <code>User</code> object to be displayed in the 
+	 * <code>JList</code> on the left side of the frame.
+	 * 
+	 * @param newUser the <code>User</code> object to be added
+	 */
 	public void addNewUser(User newUser) {
 	    listModel.addElement(newUser);
 
@@ -51,20 +52,34 @@ public class ServerFrame extends JFrame {
 		repaint();
 	}
 	
+	/** 
+	 * Displays a <code>Message</code> to the server text display. The 
+	 * way the text is displayed and the resulting behavior of the frame
+	 * depends on the type of the <code>Message</code>
+	 * 
+	 * @param serverMessage The <code>Message</code> to display
+	 */
 	public void displayMessage(Message serverMessage) {
 		User messageSender = serverMessage.getSender();
 		User messageRecipient = serverMessage.getRecipient();
 
+		// if the message is a general text message, just display it
 		if (serverMessage.getType() == Message.TEXT_MESSAGE) 
 			printToGlobal(serverMessage.getMessage());
+		
+		// if the message is a log-on message, add the user to the JList and display a log-on notification
 		else if (serverMessage.getType() == Message.USER_LOGON_MESSAGE) {
 			addNewUser(messageSender);
 			printToGlobal(messageSender + " has connected.");
 		}
+		
+		// if the message is a log-off message, remove the user from the JList and display a log-off notification
 		else if (serverMessage.getType() == Message.USER_LOGOFF_MESSAGE) {
 			removeUser(messageSender);
 			printToGlobal(messageSender + " has disconnected.");
 		}
+		
+		// if the message is a name change message, update the JList and display a name change notification
 		else if (serverMessage.getType() == Message.USER_NAME_MESSAGE) {
 			removeUser(messageSender);
 			addNewUser(messageRecipient);
@@ -72,6 +87,10 @@ public class ServerFrame extends JFrame {
 		}
 	}
 	
+	/** 
+	 * Sets up the positioning and size of the various <code>JPanel</code>s
+	 * and their contained <code>JComponent</code>s.
+	 */
 	private void initializePanels() {
 		setTitle("Chatter Server");
 		setSize(700, 550);
@@ -92,37 +111,14 @@ public class ServerFrame extends JFrame {
 	    
 	    display = new JTabbedPane();
 	    display.setPreferredSize(new Dimension(550, 400));
-	    display.addChangeListener(new ChangeListener() {
-	    	// updates recipient of message based on currently selected tab
-	        public void stateChanged(ChangeEvent e) {
-	        	setRecipientFromSelectedTab();
-	        }
-	    });
 	    display.addTab("Server", null, textScrollPane, "Server Messages");
 	    
 	    chatPanel.add(display, BorderLayout.CENTER);
-	    
-	    //Text entry panel
-//	    JPanel textPanel = new JPanel();
-//	    textPanel.setLayout(new BorderLayout());
-//	    
-//	    textEntry = new JTextField(30);
-//	    textEntry.addActionListener(this);
-//	    
-//	    sendButton = new JButton("Send");
-//	    sendButton.addActionListener(this);
-//	    
-//	    textPanel.add(textEntry, BorderLayout.CENTER);
-//	    textPanel.add(sendButton, BorderLayout.EAST);
-//	    
-//	    chatPanel.add(textPanel, BorderLayout.SOUTH);
-	    
 	    add(chatPanel, BorderLayout.CENTER);
 	    
 	    //usersPanel panel
 	    listModel = new DefaultListModel<User>();
 		userList = new JList<User>(listModel);
-//		userList.addListSelectionListener(this);
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    usersPanel = new JScrollPane(userList);
 	    initializeUsersPanel();
@@ -130,6 +126,11 @@ public class ServerFrame extends JFrame {
 	    add(usersPanel, BorderLayout.WEST);
 	}
 	
+	/** 
+	 * Called by <code>initializePanels()</code>, this method sets up the 
+	 * panel on the left side of the frame that will display the <code>JList</code>
+	 * of connected users.
+	 */
 	private void initializeUsersPanel() {
 		usersPanel.setPreferredSize(new Dimension(120, 400));
 		
@@ -139,6 +140,14 @@ public class ServerFrame extends JFrame {
 		usersPanel.setBorder(title);
 	}
 	
+	/** 
+	 * Prints a <code>Message</code> to the text display, adding a 
+	 * newline character and reseting the text insertion position
+	 * to the end of the displayed text.
+	 * 
+	 * @param message The <code>Message</code> to display
+	 */
+	@SuppressWarnings("unused")
 	private void printToGlobal(Message message) {
 		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
@@ -146,6 +155,13 @@ public class ServerFrame extends JFrame {
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
+	/** 
+	 * Prints a <code>String</code> to the text display, adding a 
+	 * newline character and reseting the text insertion position
+	 * to the end of the displayed text.
+	 * 
+	 * @param txt The <code>String</code> to display
+	 */
 	private void printToGlobal(String txt) {
 		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(txt + "\n");
@@ -153,27 +169,17 @@ public class ServerFrame extends JFrame {
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
 	}
 	
+	/** 
+	 * Removes a given <code>User</code> from the JList display of 
+	 * connected users. Called when a user disconnects or changes
+	 * names.
+	 * 
+	 * @param u The <code>User</code> to remove
+	 */
 	private void removeUser(User u) {
 		listModel.removeElement(u);
 		
 		pack();
 		repaint();
-	}
-	
-	private void setRecipientFromSelectedTab() {
-		int currentTab = display.getSelectedIndex();
-        if (currentTab == 0) {
-        	recipient = null;
-        }
-        else {
-        	// TODO: make this more efficient
-        	String recipientName = display.getTitleAt(currentTab);
-        	for (int i=0; i<listModel.getSize(); i++) {
-        		if(listModel.getElementAt(i).getNickname() == recipientName) {
-        			recipient = listModel.getElementAt(i);
-        			break;
-        		}
-        	}
-        }
 	}
 }
