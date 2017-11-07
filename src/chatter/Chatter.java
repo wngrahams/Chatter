@@ -3,6 +3,15 @@ package chatter;
 import client.ChatterClient;
 import server.ChatterServer;
 
+
+/**
+ * Chatter creates a new ChatterServer based on command line arguments. A ChatterClient
+ * must be directly created using 'java ChatterClient'. A ChatterServer can also be created
+ * using 'java ChatterServer' 
+ * 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class Chatter {
 	
 	ChatterServer server;
@@ -11,17 +20,12 @@ public class Chatter {
 	
 
 	public Chatter() {
-		server = new ChatterServer(0xFFFF);
-		cc1 = new ChatterClient("localhost", 0xFFFF);
-		cc2 = new ChatterClient("localhost", 0xFFFF);
+		this(0xFFFF);
 	}
 	
-	public Chatter(String host, int port)
+	public Chatter(int port)
 	{
 		server = new ChatterServer(port);
-		cc1 = new ChatterClient(host, port);
-		cc2 = new ChatterClient(host, port);
-		
 	}
 
 	@SuppressWarnings("unused")
@@ -29,16 +33,17 @@ public class Chatter {
 		Chatter chat;
 		if (args.length < 1)
 			chat = new Chatter();
-		else if (args.length < 2 || args.length > 2)
-			System.out.println("Usage: java Chatter <hostname> <port_number>");
-		else {
+		else if (args.length == 1) {
 			try {
-				int portInt = Integer.parseInt(args[1]);
-				chat = new Chatter(args[0], portInt);
+				int portInt = Integer.parseInt(args[0]);
+				chat = new Chatter(portInt);
 			} catch (NumberFormatException e) {
-				System.out.println("Usage: java Chatter <hostname> <port_number>");
+				System.out.println("Usage: java Chatter <port_number>");
 				System.out.println("Port number should be an integer less than " + 0xFFFF);
 			}
+		}
+		else {
+			System.out.println("Usage: java Chatter <port_number>");
 		}
 	}
 
