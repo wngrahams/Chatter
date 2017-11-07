@@ -38,7 +38,21 @@ public class ChatterServer {
 	 */
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		ChatterServer cs = new ChatterServer();
+		ChatterServer cs;
+		if (args.length < 1)
+			cs = new ChatterServer();
+		else if (args.length == 1) {
+			try {
+				int portInt = Integer.parseInt(args[0]);
+				cs = new ChatterServer(portInt);
+			} catch (NumberFormatException e) {
+				System.out.println("Usage: java ChatterServer <port_number>");
+				System.out.println("Port number should be an integer less than " + 0xFFFF);
+			}
+		}
+		else {
+			System.out.println("Usage: java ChatterServer <port_number>");
+		}
 	}
 	
 	/** 
@@ -193,6 +207,8 @@ public class ChatterServer {
 		} catch (IOException e) {
 			serverFrame.displayMessage(new Message("Error creating server socket at port: " + port));
 			keepGoing = false;
+		} catch (IllegalArgumentException e) {
+			serverFrame.displayMessage(new Message("Port value out of range: " + port));
 		}
 		
 		
