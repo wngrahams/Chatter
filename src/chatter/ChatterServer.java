@@ -6,12 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import server.ServerFrame;
 
-import chatter.ChatterClient;
 import client.User;
 import chatter.Message;
 
@@ -21,10 +17,7 @@ public class ChatterServer {
 	
 	private int port = 0xFFFF;
 	private boolean keepGoing;
-
-	private Map<User,ChatterClient> map = new HashMap<User,ChatterClient>();
 	
-	private Map<User,ChatterThread> threadMap = new HashMap<User, ChatterThread>();
 	private ArrayList<ChatterThread> threadList;
 	
 	   
@@ -87,13 +80,11 @@ public class ChatterServer {
 					
 					if (!clientRecipient.sendMessage(m)) {
 						threadList.remove(i);
-						// TODO: also remove from hashmap
 						i--;
 					}
 				}
 			}
 			else {
-				// TODO: use hashmap to send private message
 				System.out.println("Sending private message from " + m.getSender() + " to " + m.getRecipient());
 				for (int i=0; i< threadList.size(); i++) {
 					ChatterThread clientRecipient = threadList.get(i);
@@ -172,7 +163,6 @@ public class ChatterServer {
 				send = new ObjectOutputStream(clientSocket.getOutputStream());
 				recieve = new ObjectInputStream(clientSocket.getInputStream());
 								
-//				userMessage = (Message)(recieve.readObject());
 				userMessage = (Message)(recieve.readUnshared());
 				clientUser = userMessage.getSender();
 				
@@ -219,7 +209,6 @@ public class ChatterServer {
 			boolean clientRun = true;
 			while (clientRun) {
 				try {
-//					clientMessage = (Message)(recieve.readObject());
 					clientMessage = (Message)(recieve.readUnshared());
 				} catch (ClassNotFoundException e) {
 					serverFrame.displayMessage(new Message("Unknown object recieved from '" + clientUser + "'"));
@@ -230,11 +219,8 @@ public class ChatterServer {
 				}
 
 				// first check if it's a name change, if the new name is available
-				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage())) {
-//					if(!checkNameAvailable(clientMessage.getMessage())) {
+				if (clientMessage.getType() == Message.USER_NAME_MESSAGE && !checkNameAvailable(clientMessage.getMessage()))
 						sendMessageToClient(new Message(clientUser, User.SERVER, "Name '" + clientMessage.getMessage() + "' is not available."));
-//					}
-				}
 				else
 					sendMessageToClient(clientMessage);
 			}
@@ -256,33 +242,25 @@ public class ChatterServer {
 			
 			try {
 				if (m.getType() == Message.TEXT_MESSAGE) {
-//					send.writeObject(m);
 					send.writeUnshared(m);
 				}
 				else if (m.getType() == Message.USER_NAME_MESSAGE) {
-//					send.writeObject(m);
 					send.writeUnshared(m);
 					
 					// change name only for user that sent this name change request
 					if (clientUser.equals(m.getSender())) {
 						String oldUserName = clientUser.getNickname();
 						User oldUser = new User(clientUser);
-//						clientUser.setNickname(m.getMessage()); 
 						clientUser = new User(m.getMessage(), clientUser.getIP());
 						serverFrame.displayMessage(new Message(clientUser, oldUser, clientUser.getNickname(), Message.USER_NAME_MESSAGE));
-//						serverFrame.displayMessage(new Message("User '" + oldUserName + "' changed name to: '" + clientUser + "'"));
-//						send.writeObject(new Message(clientUser, User.SERVER, "Successfully changed name from " + oldUser + " to " + clientUser));
 						send.writeUnshared(new Message(clientUser, User.SERVER, "Successfully changed name from '" + oldUser + "' to '" + clientUser + "'"));
 					}
 				}	
 				else if (m.getType() == Message.USER_LOGON_MESSAGE ||  m.getType() == Message.USER_LOGOFF_MESSAGE){
-					if (m.getSender() != clientUser) {
-//						send.writeObject(m);
+					if (m.getSender() != clientUser) 
 						send.writeUnshared(m);
-					}
 				}
 				
-//				send.reset();
 			} catch (IOException e) {
 				serverFrame.displayMessage(new Message("Error sending message to " + clientUser));
 				e.printStackTrace();

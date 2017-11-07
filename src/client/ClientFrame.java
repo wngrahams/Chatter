@@ -94,21 +94,14 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			User thisUser = connectedClient.getUser();
 			User oldUser = message.getSender();
 			if (oldUser.equals(thisUser)) {
-//				thisUser.setNickname(message.getMessage());
 				connectedClient.setUser(new User(message.getMessage(), thisUser.getIP()));
 				this.setTitle(TITLE + connectedClient.getUser());
 			} 
-//			else {
-//				
-//			}
 			
 			removeUser(oldUser);
 			addNewUser(new User(message.getMessage(), oldUser.getIP()));
 			pack();
 			repaint();
-			
-//			removeUser(oldUser);
-//			addNewUser(newUser);
 		}
 	}
 
@@ -231,7 +224,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	}
 	
 	private void printToGlobal(Message message) {
-//		goToTab(User.SERVER);
 		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
 		
@@ -251,7 +243,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
         	recipient = null;
         }
         else {
-        	// TODO: make this more efficient
         	String recipientName = display.getTitleAt(currentTab);
         	for (int i=0; i<listModel.getSize(); i++) {
         		if(listModel.getElementAt(i).getNickname() == recipientName) {
@@ -280,6 +271,4 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		goToTab(userList.getSelectedValue());
 	}
 	
-	// TODO: name deselection on click
-
 }

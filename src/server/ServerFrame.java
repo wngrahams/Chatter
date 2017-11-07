@@ -24,8 +24,6 @@ public class ServerFrame extends JFrame {
 	private ChatterServer connectedServer;
 	
 	private JTabbedPane display;
-	private JButton sendButton;
-	private JTextField textEntry;
 	private JScrollPane usersPanel;
 	
 	private ArrayList<JTextArea> textDisplays = new ArrayList<JTextArea>(1);
@@ -79,7 +77,6 @@ public class ServerFrame extends JFrame {
 		setTitle("Chatter Server");
 		setSize(700, 550);
 		
-		// TODO: Change this so that client is disconnected from server when this is clicked
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 	    setLayout(new BorderLayout());
