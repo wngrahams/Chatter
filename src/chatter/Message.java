@@ -2,14 +2,17 @@ package chatter;
 
 import java.io.Serializable;
 
+/**
+ *  Message class consolidates messages passed between clients and server into one class.
+ *  Contains a String that stores the text message, two <code>User</code> objects for storing
+ *   the sender and recipient <code>User</code>. ALso contains integers denoting the "type" of message. 
+ *   Message objects are either log-on, log-off, text message, or update name message.
+ *   
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class Message implements Serializable {
 
-	/**
-	 *  Message class consolidates messages passed between clients and server into one class.
-	 *  Contains a String that stores the text message, two <code>User</code> objects for storing
-	 *   the sender and recipient <code>User</code>. ALso contains integers denoting the "type" of message. 
-	 *   Message objects are either log-on, log-off, text message, or update name message.
-	 */
 	private static final long serialVersionUID = 4419539405020821670L;
 	private String message;
 	private User recipient;

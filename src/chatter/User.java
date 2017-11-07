@@ -2,12 +2,15 @@ package chatter;
 
 import java.io.Serializable;
 
+/**
+ * User class used to consolidate a client's name/nickname and IP Address into one object.
+ *  A new User object is created when the ChatterClient class is run. 
+ *  
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class User implements Serializable {
 	
-	/**
-	 * User class used to consolidate a client's name/nickname and IP Address into one object.
-	 *  A new User object is created when the ChatterClient class is run. 
-	 */
 	private static final long serialVersionUID = 8774797718179737042L;
 	private String nickname;
 	private String ipAddress; 

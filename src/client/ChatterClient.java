@@ -7,18 +7,18 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import com.sun.corba.se.impl.oa.toa.TOA;
-
 import chatter.Message;
 import chatter.User;
-import server.ChatterServer;
 
+/**
+ * ChatterClient class consolidates the socket, ClientFrame, output stream, and input stream 
+ * for a new <code>User</code> that joins the server. 
+ * 
+ * @author Graham Stubbs (wgs11@georgetown.edu)
+ * @author Cooper Logerfo (cml264@georgetown.edu)
+ */
 public class ChatterClient implements Serializable {
 	
-	/**
-	 * ChatterClient class consolidates the socket, ClientFrame, output stream, and input stream 
-	 * for a new <code>User</code> that joins the server. 
-	 */
 	private static final long serialVersionUID = 836093546191030129L;
 	private transient ClientFrame clientFrame;
 	private User clientUser;
@@ -31,6 +31,7 @@ public class ChatterClient implements Serializable {
 	private transient ObjectInputStream fromServer;
 
 	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		ChatterClient cc;
 		if (args.length < 1)
