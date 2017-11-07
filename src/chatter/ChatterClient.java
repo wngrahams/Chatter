@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import client.ClientFrame;
 import client.User;
@@ -18,7 +19,7 @@ public class ChatterClient implements Serializable {
 	private transient ClientFrame clientFrame;
 	private User clientUser;
 	
-	private transient Socket socket;
+	private transient Socket socket; 
 	private String serverIP;
 	private int serverPort;
 	
@@ -42,63 +43,102 @@ public class ChatterClient implements Serializable {
 	}
 	
 	public ChatterClient(String ip, int port) {
-		clientFrame = new ClientFrame(this);
 		clientUser = new User();
+		clientFrame = new ClientFrame(this);
 		clientFrame.addNewUser(getUser());
-		clientFrame.addNewUser(new User("graham", "localhost"));
-		clientFrame.addNewUser(new User("Jim", "localhost"));
 	   
 		serverIP = ip;
 		serverPort = port;
 		
-		connectToServer();
-		System.out.println("Starting to listen");
-		while(null != clientFrame) {
-			System.out.println("client listening");
-			recieveMessage();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		if(!connectToServer())
+			disconnectFromServer();
 	}
 
-	private void connectToServer() {
+	private boolean connectToServer() {
 		try {
+			clientFrame.displayMessage(new Message("Connecting to server: " + serverIP + " " + serverPort));
 			socket = new Socket(serverIP, serverPort);
-			System.out.println("Connecting to server...");
-			
-			toServer = new ObjectOutputStream(socket.getOutputStream());
-			
-			toServer.writeObject(this);
-			toServer.flush();
-			System.out.println("after write object");
+		} catch (UnknownHostException e) {
+			clientFrame.displayMessage(new Message("IP " + serverIP + " could not be determined."));
+			return false;
 		} catch (IOException e) {
-			System.err.println("Failed to connect to server.");
-			System.err.println(e);
+			clientFrame.displayMessage(new Message("Error creating socket with host: " + serverIP + " " + serverPort));
+			return false;
 		} 
+		
+		clientFrame.displayMessage(new Message("Connection successful."));
+		
+		try {
+			fromServer = new ObjectInputStream(socket.getInputStream());
+			toServer = new ObjectOutputStream(socket.getOutputStream());
+		} catch (IOException e) {
+			clientFrame.displayMessage(new Message("Error connecting to server input/output streams."));
+			return false;
+		}
+		
+		// start listen thread to constantly listen to server:
+		new ServerListener().start();
+		
+		try {
+			Message logon = new Message(clientUser, Message.USER_LOGON_MESSAGE);
+			toServer.writeUnshared(logon);
+		} catch (IOException e) {
+			clientFrame.displayMessage(new Message("Error sending user information to server."));
+			return false;
+		} 
+		
+		//no errors:
+		return true;
+	}
+	
+	public void disconnectFromServer() {
+		// disconnect from the server:
+		try {
+			if (fromServer != null) {
+				fromServer.close();
+				fromServer = null;
+			}
+			if (toServer != null) {
+				toServer.close();
+				toServer = null;
+			}
+			if (socket != null) {
+				socket.close();
+				socket = null;
+			}
+		} catch (IOException e) {
+			clientFrame.displayMessage(new Message("Error disconnecting from server."));
+		}
+		
+		clientFrame.displayMessage(new Message("Disonnected from server."));
 	}
 	
 	public User getUser() {
 		return clientUser;
 	}
 	
-//	private class messageReciever implements Runnable {
-//		
-//		@Override
-//		public void run() {
-//			try {
-//				Message serverMessage = (Message)(fromServer.readObject());
-//				clientFrame.displayMessage(serverMessage);
-//			} catch (IOException e) {
-//				System.err.println(e);
-//			} catch (ClassNotFoundException e) {
-//				System.err.print(e);
-//			}
-//		}
-//	}
+	public void sendMessage(String text, User recipient) {
+		String[] splitString = text.split(" ", 2);
+		Message messageToSend;
+		
+		if (splitString[0].equalsIgnoreCase("/nick")) {
+			if (splitString.length > 1)
+				messageToSend = new Message(User.SERVER, clientUser, splitString[1], Message.USER_NAME_MESSAGE);
+			else {
+				clientFrame.displayMessage(new Message("No nickname specified."));
+				return;
+			}
+		}
+		else 
+			messageToSend = new Message(recipient, clientUser, text);
+		
+		Thread messageThread = new Thread(new messageSender(messageToSend));
+		messageThread.start();
+	}
+	
+	public void setUser(User u) {
+		clientUser = u;
+	}
 	
 	private class messageSender implements Runnable {
 		
@@ -111,39 +151,35 @@ public class ChatterClient implements Serializable {
 		@Override
 		public void run() {
 			try {	
-				toServer.writeObject(messageToSend);
-				System.out.println("Sending message: " + messageToSend);
-				toServer.flush();
+				toServer.writeUnshared(messageToSend);
 			} catch (IOException e) {
-				Message errorMessage = new Message(clientUser, null, "Error sending message to " + messageToSend.getRecipient());
+				Message errorMessage = new Message("Error sending message to " + messageToSend.getRecipient());
 				clientFrame.displayMessage(errorMessage);
-//				System.err.println(e);
-			} 
-		}
-	}
-	
-	public void recieveMessage() {
-		try {
-			fromServer = new ObjectInputStream(socket.getInputStream());
-			if (fromServer != null) {
-				Message serverMessage = (Message)(fromServer.readObject());
-				if (null != serverMessage) {
-					clientFrame.displayMessage(serverMessage);
-					System.out.println("Recieved message: " + serverMessage);
-				}
-				else
-					System.err.println("No Message recieved");
+			} catch (NullPointerException e) {
+				clientFrame.displayMessage(new Message("Not connected to any server."));
 			}
-		} catch (IOException e) {
-			System.err.println(e);
-		} catch (ClassNotFoundException e) {
-			System.err.print(e);
 		}
 	}
 	
-	public void sendMessage(String text, User recipient) {
-		Message messageToSend = new Message(recipient, clientUser, text);
-		Thread messageThread = new Thread(new messageSender(messageToSend));
-		messageThread.start();
+	/**
+	 * Thread class to constantly listen to the server
+	 */
+	private class ServerListener extends Thread {
+		
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					Message messageRecieved = (Message)(fromServer.readUnshared());
+					clientFrame.displayMessage(messageRecieved);
+				} catch (IOException e) {
+					clientFrame.displayMessage(new Message("Server has shutdown."));
+					disconnectFromServer();
+					break;
+				} catch (ClassCastException | ClassNotFoundException e) {
+					clientFrame.displayMessage(new Message("Error: unknown object recieved from server."));
+				}
+			}
+		}
 	}
 }

@@ -28,8 +28,6 @@ import javax.swing.event.ListSelectionListener;
 import chatter.ChatterClient;
 import chatter.Message;
 
-// RPC doesn't require socket connection
-
 @SuppressWarnings("serial")
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{
 	
@@ -47,6 +45,8 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	
 	private User recipient;
 	
+	private static final String TITLE = "Chatter Client - ";
+	
 	public ClientFrame(ChatterClient cc) {
 		super();
 		connectedClient = cc;
@@ -63,20 +63,48 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		repaint();
 	}
 	
-	public void displayMessage(Message serverMessage) {
-		User messageSender = serverMessage.getSender();
-		User messageRecipient = serverMessage.getRecipient();
+	public void displayMessage(Message message) {
+		User messageSender = message.getSender();
+		User messageRecipient = message.getRecipient();
 
-		// navigate to correct tab or create new tab
-		if (connectedClient.getUser() == messageSender)
-			goToTab(messageRecipient);
-		else if (connectedClient.getUser() == messageRecipient)
-			goToTab(messageSender);
-
-		// display text
-		printToCurrentTab(serverMessage);
+		if (message.getType() == Message.TEXT_MESSAGE) {
+			// navigate to correct tab or create new tab
+			System.out.print("To: " + message.getRecipient() + ", from: " + message.getSender());
+			System.out.println(", text: " + message.getMessage());
+			if (messageSender != User.SERVER) {
+				if (messageRecipient == User.SERVER)
+					printToGlobal(message);
+				else if (connectedClient.getUser().equals(messageSender))
+					printToTab(messageRecipient, message);
+				else if (connectedClient.getUser().equals(messageRecipient)) 
+					printToTab(messageSender, message);
+			}
+			else
+				printToGlobal(message);
+		}
+		else if (message.getType() == Message.USER_LOGON_MESSAGE) {
+			if (messageSender != connectedClient.getUser()) 
+				addNewUser(message.getSender());
+		}
+		else if (message.getType() == Message.USER_LOGOFF_MESSAGE) {
+			if (messageSender != connectedClient.getUser()) 
+				removeUser(message.getSender());
+		}
+		else if (message.getType() == Message.USER_NAME_MESSAGE) { 
+			User thisUser = connectedClient.getUser();
+			User oldUser = message.getSender();
+			if (oldUser.equals(thisUser)) {
+				connectedClient.setUser(new User(message.getMessage(), thisUser.getIP()));
+				this.setTitle(TITLE + connectedClient.getUser());
+			} 
+			
+			removeUser(oldUser);
+			addNewUser(new User(message.getMessage(), oldUser.getIP()));
+			pack();
+			repaint();
+		}
 	}
-	
+
 	private void goToTab(User u) {
 		int tabIndex;
 		if (null == u) 
@@ -95,14 +123,14 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		    
 			display.addTab(u.getNickname(), null, new JScrollPane(textArea), tooltip);
 			textDisplays.add(textArea);
+			display.setSelectedIndex(textDisplays.size() - 1);
 		}
 	}
 	
 	private void initializePanels() {
-		setTitle("Chatter Client");
+		setTitle(TITLE + connectedClient.getUser());
 		setSize(700, 550);
 		
-		// TODO: Change this so that client is disconnected from server when this is clicked
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 	    setLayout(new BorderLayout());
@@ -166,11 +194,47 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		usersPanel.setBorder(title);
 	}
 	
-	private void printToCurrentTab(Message message) {
-		JTextArea currentTextDisplay = textDisplays.get(display.getSelectedIndex());
+	private void printToTab(User u, Message m) {
+		int tabIndex;
+		if (null == u) {
+			printToGlobal(m);
+			return;
+		}
+		else 
+			tabIndex = display.indexOfTab(u.getNickname());
+		
+		JTextArea currentTextDisplay;
+		
+		if (tabIndex != -1)
+			currentTextDisplay = textDisplays.get(tabIndex);
+		else {
+			JTextArea textArea = new JTextArea();
+		    textArea.setEditable(false);
+		    
+		    String tooltip = "Private message with " + u.getNickname();
+		    
+			display.addTab(u.getNickname(), null, new JScrollPane(textArea), tooltip);
+			textDisplays.add(textArea);
+			
+			currentTextDisplay = textDisplays.get(textDisplays.size() - 1);
+		}
+		
+		currentTextDisplay.append(m + "\n");
+		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void printToGlobal(Message message) {
+		JTextArea currentTextDisplay = textDisplays.get(0);
 		currentTextDisplay.append(message + "\n");
 		
 		currentTextDisplay.setCaretPosition(currentTextDisplay.getDocument().getLength());
+	}
+	
+	private void removeUser(User u) {
+		listModel.removeElement(u);
+		
+		pack();
+		repaint();
 	}
 	
 	private void setRecipientFromSelectedTab() {
@@ -179,7 +243,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
         	recipient = null;
         }
         else {
-        	// TODO: make this more efficient
         	String recipientName = display.getTitleAt(currentTab);
         	for (int i=0; i<listModel.getSize(); i++) {
         		if(listModel.getElementAt(i).getNickname() == recipientName) {
@@ -187,6 +250,8 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
         			break;
         		}
         	}
+        	
+        	recipient = new User(recipientName);
         }
 	}
 	
@@ -197,7 +262,6 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 			if (text != null && !text.isEmpty()) {				
 				connectedClient.sendMessage(text, recipient);
 				textEntry.setText(null);
-				
 			}
 		}
 	}
@@ -207,6 +271,4 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 		goToTab(userList.getSelectedValue());
 	}
 	
-	// TODO: name deselection on click
-
 }
