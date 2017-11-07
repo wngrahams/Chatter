@@ -14,10 +14,8 @@ import server.ChatterServer;
  */
 public class Chatter {
 	
-	ChatterServer server;
-	ChatterClient cc1;
-	ChatterClient cc2;
-	
+	@SuppressWarnings("unused")
+	private ChatterServer server;
 
 	public Chatter() {
 		this(0xFFFF);
