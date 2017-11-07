@@ -11,6 +11,7 @@ import com.sun.corba.se.impl.oa.toa.TOA;
 
 import chatter.Message;
 import chatter.User;
+import server.ChatterServer;
 
 public class ChatterClient implements Serializable {
 	
@@ -34,8 +35,17 @@ public class ChatterClient implements Serializable {
 		ChatterClient cc;
 		if (args.length < 1)
 			cc = new ChatterClient();
-		else 
-			cc = new ChatterClient(Integer.parseInt(args[1]));
+		else if (args.length < 2 || args.length > 2)
+			System.out.println("Usage: java ChatterClient <hostname> <port_number>");
+		else {
+			try {
+				int portInt = Integer.parseInt(args[1]);
+				cc = new ChatterClient(args[0], portInt);
+			} catch (NumberFormatException e) {
+				System.out.println("Usage: java ChatterClient <hostname> <port_number>");
+				System.out.println("Port number should be an integer less than " + 0xFFFF);
+			}
+		}
 	}
 	
 	public ChatterClient() {
