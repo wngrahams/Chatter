@@ -1,4 +1,4 @@
-package chatter;
+package server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -6,10 +6,9 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import server.ServerFrame;
 
-import client.User;
 import chatter.Message;
+import chatter.User;
 
 public class ChatterServer {
 

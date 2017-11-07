@@ -14,10 +14,9 @@ import javax.swing.event.ListSelectionListener;
 
 import com.sun.corba.se.spi.activation.Server;
 
-import chatter.ChatterClient;
-import chatter.ChatterServer;
 import chatter.Message;
-import client.User;
+import chatter.User;
+import client.ChatterClient;
 
 public class ServerFrame extends JFrame {
 

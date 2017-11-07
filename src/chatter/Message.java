@@ -2,8 +2,6 @@ package chatter;
 
 import java.io.Serializable;
 
-import client.User;
-
 public class Message implements Serializable {
 
 	/**

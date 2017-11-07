@@ -1,4 +1,4 @@
-package client;
+package chatter;
 
 import java.io.Serializable;
 

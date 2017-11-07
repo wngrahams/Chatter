@@ -25,8 +25,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import chatter.ChatterClient;
 import chatter.Message;
+import chatter.User;
 
 @SuppressWarnings("serial")
 public class ClientFrame extends JFrame implements ActionListener, ListSelectionListener{

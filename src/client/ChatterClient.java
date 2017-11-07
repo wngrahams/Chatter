@@ -1,4 +1,4 @@
-package chatter;
+package client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import client.ClientFrame;
-import client.User;
+import chatter.Message;
+import chatter.User;
 
 public class ChatterClient implements Serializable {
 	
