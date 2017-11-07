@@ -10,6 +10,10 @@ import chatter.Message;
 import chatter.User;
 
 /** 
+ * The <code>ServerFrame</code> class is a GUI that allows interaction
+ * with the <code>ChatterServer</code> class and allows for informative messages
+ * to be displayed. <code></code>
+ * 
  * @author Graham Stubbs (wgs11@georgetown.edu)
  * @author Cooper Logerfo (cml264@georgetown.edu)
  */
