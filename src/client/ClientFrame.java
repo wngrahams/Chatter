@@ -178,7 +178,7 @@ public class ClientFrame extends JFrame implements ActionListener, ListSelection
 	    JPanel chatPanel = new JPanel();
 	    chatPanel.setLayout(new BorderLayout());
 	    
-	    //Tabbed chat display
+	    // Tabbed chat display
 	    JTextArea textDisplay = new JTextArea();
 	    textDisplays.add(textDisplay);
 	    textDisplay.setEditable(false);

@@ -175,7 +175,7 @@ public class ChatterClient implements Serializable {
 		else 
 			messageToSend = new Message(recipient, clientUser, text);
 		
-		Thread messageThread = new Thread(new messageSender(messageToSend));
+		Thread messageThread = new Thread(new MessageSender(messageToSend));
 		messageThread.start();
 	}
 	
@@ -186,7 +186,7 @@ public class ChatterClient implements Serializable {
 	/**
 	 * Nested Thread class which implements Runnable, and overrides run(). 
 	 */
-	private class messageSender implements Runnable {
+	private class MessageSender implements Runnable {
 		
 		private Message messageToSend;
 		
@@ -194,7 +194,7 @@ public class ChatterClient implements Serializable {
 		 * Constructor, updates the member <code>Message</code> with the Message object that was passed
 		 * to the thread.
 		 */
-		public messageSender(Message message) {
+		public MessageSender(Message message) {
 			messageToSend = message;
 		}
 		
